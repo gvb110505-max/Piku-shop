@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light only">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIKU — 결제 실패</title>
+<style>
+html,body{background:#fff !important;color:#0d0d0d !important}
+body{font-family:'Helvetica Neue',Helvetica,Arial,'Apple SD Gothic Neo',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.box{text-align:center;padding:40px;max-width:420px}
+h1{font-size:20px;letter-spacing:4px;font-weight:800;margin-bottom:18px;color:#c0392b}
+p{font-size:13px;color:#555;line-height:1.8}
+a{display:inline-block;margin-top:28px;background:#0d0d0d;color:#fff;text-decoration:none;padding:13px 36px;font-size:11px;letter-spacing:3px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>결제 실패</h1>
+  <p id="msg">결제가 완료되지 않았습니다.</p>
+  <a href="/">돌아가기</a>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+if (q.get("message")) document.getElementById("msg").textContent = q.get("message");
+</script>
+</body>
+</html>

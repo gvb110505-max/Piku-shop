@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light only">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIKU</title>
+<style>
+:root{
+  --black:#0d0d0d;
+  --white:#ffffff;
+  --off:#f6f6f6;
+  --gray1:#e6e6e6;
+  --gray2:#6b6b6b;
+  --gray3:#3a3a3a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;background:#ffffff;color-scheme:light only}
+body{
+  forced-color-adjust:none;
+  font-family:'Helvetica Neue',Helvetica,Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  background:var(--white);
+  color:var(--black);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- top strip ---------- */
+.strip{
+  background:var(--black);color:var(--white);
+  text-align:center;font-size:11px;letter-spacing:2px;
+  padding:9px 12px;
+}
+
+/* ---------- nav ---------- */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--gray1);
+}
+.nav-in{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:16px 24px;
+}
+.brand{font-size:22px;font-weight:800;letter-spacing:6px;text-decoration:none;color:var(--black)}
+.navlinks{display:flex;gap:28px;list-style:none}
+.navlinks a{color:var(--gray3);text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
+.navlinks a:hover{color:var(--black)}
+
+/* ---------- search ---------- */
+.searchbox{position:relative;flex:1;max-width:300px}
+.searchbox input{
+  width:100%;background:var(--white);border:1px solid var(--black);border-radius:0;
+  padding:10px 36px 10px 14px;color:var(--black);font-size:13px;outline:none;
+  transition:border-color .2s;letter-spacing:.5px;
+}
+.searchbox input:focus{border-color:var(--black)}
+.searchbox .sicon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--black);pointer-events:none}
+.search-results{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:var(--white);border:1px solid var(--black);
+  max-height:320px;overflow-y:auto;display:none;
+  box-shadow:6px 6px 0 rgba(0,0,0,.08);
+}
+.search-results.open{display:block}
+.sr-item{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--gray1);
+  transition:background .15s;
+}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:#fafafa}
+.sr-item .no{font-weight:700;font-size:13px;letter-spacing:1px}
+.sr-item .tp{font-size:11px;color:var(--gray2);letter-spacing:1px;margin-top:2px}
+.sr-item .r{display:flex;align-items:center;gap:10px}
+.sr-item .pr{font-size:13px;font-weight:600}
+.tag{
+  font-size:10px;padding:3px 8px;border:1px solid var(--gray1);
+  color:var(--gray3);letter-spacing:1px;white-space:nowrap;
+}
+.sr-empty{padding:18px;text-align:center;color:var(--gray2);font-size:12px;letter-spacing:1px}
+
+/* ---------- hero ---------- */
+.hero{
+  border-bottom:1px solid var(--gray1);
+  text-align:center;
+  padding:90px 24px 80px;
+}
+.hero .season{font-size:11px;letter-spacing:5px;color:var(--gray2);margin-bottom:22px;text-transform:uppercase}
+.hero h1{font-size:clamp(56px,14vw,130px);font-weight:800;letter-spacing:14px;line-height:1;transform:translateX(-10px)}
+.hero .sub{margin-top:22px;font-size:13px;color:var(--gray3);letter-spacing:1px;line-height:1.8}
+.hero .cta{
+  display:inline-block;margin-top:36px;
+  background:var(--black);color:var(--white);
+  padding:14px 40px;text-decoration:none;
+  font-size:12px;letter-spacing:3px;font-weight:600;
+  transition:opacity .2s;
+}
+.hero .cta:hover{opacity:.8}
+
+/* ---------- section ---------- */
+section{max-width:1200px;margin:0 auto;padding:70px 24px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;gap:14px;flex-wrap:wrap}
+.sec-head h2{font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+.sec-head .cnt{font-size:12px;color:var(--gray2);letter-spacing:1px}
+.sec-sub{font-size:12px;color:var(--gray2);letter-spacing:.5px;margin-bottom:34px}
+
+/* ---------- today ---------- */
+.today{
+  display:grid;grid-template-columns:1fr 1fr;
+  border:1px solid var(--black);
+}
+.today .ph{aspect-ratio:4/5;border-right:1px solid var(--gray1)}
+.today .info{padding:48px 44px;display:flex;flex-direction:column;justify-content:center}
+.today .lbl{font-size:10px;letter-spacing:4px;color:var(--gray2);margin-bottom:20px;text-transform:uppercase}
+.today h3{font-size:clamp(30px,5vw,52px);font-weight:800;letter-spacing:2px;margin-bottom:6px}
+.today .tp{font-size:12px;color:var(--gray2);letter-spacing:2px;margin-bottom:24px;text-transform:uppercase}
+.today .pr{font-size:22px;font-weight:600;margin-bottom:28px}
+.today .btn{
+  align-self:flex-start;
+  border:1px solid var(--black);background:none;color:var(--black);
+  padding:12px 32px;font-size:11px;letter-spacing:3px;font-weight:600;cursor:pointer;
+  transition:background .2s,color .2s;
+}
+.today .btn:hover{background:var(--black);color:var(--white)}
+
+/* ---------- placeholder ---------- */
+.ph{
+  position:relative;background:var(--white);outline:1px dashed #c9c9c9;outline-offset:-8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:var(--black);
+}
+.ph .icon{font-size:24px;font-weight:300}
+.ph .hint{font-size:11px;letter-spacing:1px}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph img[src=""],.ph img:not([src]){display:none}
+
+/* ---------- grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--gray1);border:1px solid var(--gray1)}
+.card{background:var(--white);transition:background .2s;cursor:pointer;position:relative}
+.card:hover{background:var(--white)}
+.card:hover .ph{outline-color:var(--black)}
+.card .ph{aspect-ratio:3/4}
+.card .tag{position:absolute;top:10px;left:10px;z-index:2;background:var(--white)}
+.card .meta{padding:14px 14px 18px}
+.card .no{font-size:13px;font-weight:700;letter-spacing:1px}
+.card .tp{font-size:10px;color:var(--gray2);letter-spacing:2px;margin-top:3px;text-transform:uppercase}
+.card .pr{font-size:13px;font-weight:600;margin-top:8px}
+.empty{grid-column:1/-1;background:var(--white);padding:50px;text-align:center;color:var(--gray2);font-size:13px}
+
+/* ---------- lookbook ---------- */
+.look{display:grid;grid-template-columns:2fr 1fr;gap:1px;background:var(--gray1);border:1px solid var(--gray1)}
+
+.look .big{aspect-ratio:3/4;grid-row:span 2}
+.look .sm{aspect-ratio:auto}
+
+/* ---------- about ---------- */
+.about{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.about .ph{aspect-ratio:1;border:1px solid var(--gray1)}
+.about h3{font-size:26px;font-weight:800;letter-spacing:3px;margin-bottom:24px}
+.about p{color:var(--gray3);line-height:2;font-size:14px;margin-bottom:16px}
+
+/* ---------- newsletter ---------- */
+.signup{border-top:1px solid var(--gray1);border-bottom:1px solid var(--gray1);text-align:center;padding:70px 24px}
+.signup h2{font-size:22px;font-weight:800;letter-spacing:4px;margin-bottom:12px}
+.signup p{font-size:12px;color:var(--gray2);letter-spacing:1px;margin-bottom:28px}
+.signup .row{display:flex;max-width:420px;margin:0 auto}
+.signup input{
+  flex:1;border:1px solid var(--black);border-right:none;background:var(--white);
+  padding:13px 18px;font-size:13px;outline:none;
+}
+.signup button{
+  background:var(--black);color:var(--white);border:1px solid var(--black);
+  padding:13px 26px;font-size:11px;letter-spacing:2px;font-weight:600;cursor:pointer;
+  transition:opacity .2s;white-space:nowrap;
+}
+.signup button:hover{opacity:.85}
+
+/* ---------- footer ---------- */
+footer{max-width:1200px;margin:0 auto;padding:56px 24px 40px}
+.foot-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:36px;margin-bottom:44px}
+.foot-brand{font-size:24px;font-weight:800;letter-spacing:6px}
+.foot-cols{display:flex;gap:70px}
+.foot-cols h4{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gray2);margin-bottom:16px}
+.foot-cols a{display:block;color:var(--gray3);text-decoration:none;font-size:13px;margin-bottom:10px;transition:color .2s}
+.foot-cols a:hover{color:var(--black)}
+.foot-bot{display:flex;justify-content:space-between;color:var(--gray2);font-size:11px;letter-spacing:1px;border-top:1px solid var(--gray1);padding-top:22px;flex-wrap:wrap;gap:8px}
+
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  .navlinks{display:none}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .today{grid-template-columns:1fr}
+  .today .ph{border-right:none;border-bottom:1px solid var(--gray1)}
+  .look{grid-template-columns:1fr}
+  .look .big{grid-row:auto}
+  .look .sm{aspect-ratio:4/3}
+  .about{grid-template-columns:1fr;gap:34px}
+  .foot-top{flex-direction:column}
+}
+@media(max-width:520px){
+  section{padding:54px 16px}
+  .signup .row{flex-direction:column}
+  .signup input{border-right:1px solid var(--black);border-bottom:none}
+  .foot-cols{gap:44px;flex-wrap:wrap}
+  .searchbox{max-width:none}
+}
+input::placeholder{color:#4a4a4a}
+.ph .icon{opacity:1}
+.ph .hint{color:var(--black);opacity:.85}
+
+
+/* ---------- cart ---------- */
+.cart-btn{
+  background:none;border:1px solid var(--black);padding:9px 16px;
+  font-size:11px;letter-spacing:2px;font-weight:700;cursor:pointer;color:var(--black);
+  white-space:nowrap;
+}
+.cart-btn span{background:var(--black);color:#fff;padding:1px 7px;margin-left:4px;font-size:10px}
+.cart-panel{
+  position:fixed;top:0;right:-380px;width:min(380px,92vw);height:100vh;z-index:200;
+  background:#fff !important;border-left:1px solid var(--black);
+  display:flex;flex-direction:column;transition:right .25s;
+}
+.cart-panel.open{right:0}
+.cart-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--gray1)}
+.cart-head h3{font-size:13px;letter-spacing:3px;font-weight:800}
+.cart-head button{background:none;border:none;font-size:20px;cursor:pointer;color:var(--black)}
+.cart-items{flex:1;overflow-y:auto;padding:10px 22px}
+.ci{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--gray1);gap:10px}
+.ci .l .no{font-weight:700;font-size:13px;letter-spacing:1px}
+.ci .l .tp{font-size:10px;color:var(--gray2);letter-spacing:1px;margin-top:2px}
+.ci .r{display:flex;align-items:center;gap:12px}
+.ci .qty{display:flex;align-items:center;gap:8px}
+.ci .qty button{width:22px;height:22px;border:1px solid var(--gray1);background:none;cursor:pointer;font-size:13px;color:var(--black)}
+.ci .pr{font-size:13px;font-weight:600;min-width:70px;text-align:right}
+.ci .rm{background:none;border:none;color:var(--gray2);cursor:pointer;font-size:14px}
+.cart-empty{text-align:center;color:var(--gray2);font-size:12px;letter-spacing:1px;padding:50px 0}
+.cart-foot{border-top:1px solid var(--black);padding:20px 22px}
+.cart-total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:16px}
+.cart-pay{
+  width:100%;background:var(--black);color:#fff;border:none;
+  padding:15px;font-size:12px;letter-spacing:3px;font-weight:700;cursor:pointer;
+}
+.cart-pay:disabled{opacity:.4;cursor:default}
+.add-btn{
+  width:100%;background:none;border:1px solid var(--black);color:var(--black);
+  padding:10px;font-size:11px;letter-spacing:2px;font-weight:600;cursor:pointer;margin-top:10px;
+  transition:background .15s,color .15s;
+}
+.add-btn:hover{background:var(--black);color:#fff}
+.cart-dim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:150;display:none}
+.cart-dim.open{display:block}
+
+/* 다크모드 강제 무효화 */
+html,body{background:#ffffff !important;color:#0d0d0d !important}
+section,header.hero,footer,.signup,nav{background:#ffffff !important}
+nav{background:rgba(255,255,255,.96) !important}
+.strip{background:#0d0d0d !important;color:#ffffff !important}
+.hero .cta,.signup button{background:#0d0d0d !important;color:#ffffff !important}
+.today .btn:hover{background:#0d0d0d !important;color:#ffffff !important}
+@media (prefers-color-scheme: dark){
+  html,body{background:#ffffff !important;color:#0d0d0d !important}
+}
+</style>
+</head>
+<body style="background:#ffffff !important;color:#0d0d0d !important">
+
+<div class="cart-dim" id="cartDim" onclick="toggleCart()"></div>
+<aside class="cart-panel" id="cartPanel">
+  <div class="cart-head">
+    <h3>CART</h3>
+    <button onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="cart-total"><span>TOTAL</span><span id="cartTotal">₩0</span></div>
+    <button class="cart-pay" id="payBtn" onclick="checkout()">결제하기</button>
+  </div>
+</aside>
+
+<div class="strip">FREE SHIPPING ON ORDERS OVER ₩50,000</div>
+
+<nav>
+  <div class="nav-in">
+    <a href="#top" class="brand">PIKU</a>
+    <div class="searchbox">
+      <input type="text" id="searchInput" placeholder="SEARCH" autocomplete="off">
+      <span class="sicon">⌕</span>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <button class="cart-btn" onclick="toggleCart()">CART <span id="cartCnt">0</span></button>
+    <ul class="navlinks">
+      <li><a href="#shop">Shop</a></li>
+      <li><a href="#lookbook">Lookbook</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <p class="season" id="heroSeason"></p>
+  <h1>PIKU</h1>
+  <a href="#shop" class="cta">SHOP NOW</a>
+</header>
+
+<section id="today">
+  <div class="sec-head">
+    <h2>Today's Pick</h2>
+    <span class="cnt" id="todayDate"></span>
+  </div>
+  <p class="sec-sub" id="todaySub"></p>
+  <div class="today" id="todayCard"></div>
+</section>
+
+<section id="shop">
+  <div class="sec-head">
+    <h2 id="shopTitle">Shop</h2>
+    <span class="cnt" id="shopCnt"></span>
+  </div>
+  <p class="sec-sub" id="shopSub"></p>
+  <div class="grid" id="productGrid"></div>
+</section>
+
+<section id="lookbook">
+  <div class="sec-head">
+    <h2>Lookbook</h2>
+  </div>
+  <div class="look">
+    <div class="ph big"><span class="icon">＋</span><span class="hint">메인 화보 넣기</span></div>
+    <div class="ph sm"><span class="icon">＋</span><span class="hint">사진 넣기</span></div>
+    <div class="ph sm"><span class="icon">＋</span><span class="hint">사진 넣기</span></div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="sec-head">
+    <h2>About</h2>
+  </div>
+  <div class="about">
+    <div class="ph"><span class="icon">＋</span><span class="hint">브랜드 사진 넣기</span></div>
+    <div>
+      <h3>PIKU</h3>
+      <p>서울 기반 의류 브랜드.<br>블랙 · 화이트 · 그레이.</p>
+    </div>
+  </div>
+</section>
+
+<div class="signup" id="signup">
+  <h2>NEWSLETTER</h2>
+  <p>입고 소식 알림</p>
+  <div class="row">
+    <input type="email" id="email" placeholder="이메일 주소">
+    <button onclick="subscribe()">구독</button>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-top">
+    <div class="foot-brand">PIKU</div>
+    <div class="foot-cols">
+      <div>
+        <h4>Shop</h4>
+        <a href="#shop">이번 시즌</a>
+        <a href="#today">오늘의 추천</a>
+        <a href="#lookbook">룩북</a>
+      </div>
+      <div>
+        <h4>Info</h4>
+        <a href="#about">브랜드</a>
+        <a href="#signup">문의</a>
+      </div>
+      <div>
+        <h4>Follow</h4>
+        <a href="#">Instagram</a>
+        <a href="#">YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bot">
+    <span>© 2026 PIKU</span>
+    <span>MADE BY 정세현</span>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   상품 등록소 — 이름 없이 번호로만 관리
+   no: 상품 번호 / season: "winter" "spring" "summer" "fall"
+   img: "" 비워두면 placeholder, 사진 파일명 넣으면 표시됨
+   ============================================================ */
+const products = [
+  // ---- 겨울 (12~3월) ----
+  {no:1,  type:"Outer",  price:59000, season:"winter", img:""},
+  {no:2,  type:"Outer",  price:89000, season:"winter", img:""},
+  {no:3,  type:"Top",    price:42000, season:"winter", img:""},
+  {no:4,  type:"Bottom", price:45000, season:"winter", img:""},
+
+  // ---- 봄 (4~6월) ----
+  {no:5,  type:"Outer",  price:55000, season:"spring", img:""},
+  {no:6,  type:"Top",    price:38000, season:"spring", img:""},
+  {no:7,  type:"Bottom", price:43000, season:"spring", img:""},
+  {no:8,  type:"Top",    price:41000, season:"spring", img:""},
+
+  // ---- 여름 (7~9월) ----
+  {no:9,  type:"Top",    price:29000, season:"summer", img:""},
+  {no:10, type:"Bottom", price:36000, season:"summer", img:""},
+  {no:11, type:"Top",    price:25000, season:"summer", img:""},
+  {no:12, type:"Bottom", price:33000, season:"summer", img:""},
+
+  // ---- 가을 (10~11월) ----
+  {no:13, type:"Outer",  price:69000, season:"fall", img:""},
+  {no:14, type:"Top",    price:42000, season:"fall", img:""},
+  {no:15, type:"Bottom", price:45000, season:"fall", img:""},
+  {no:16, type:"Bottom", price:47000, season:"fall", img:""},
+];
+
+/* ---------- 계절 판별: 12~3 겨울 / 4~6 봄 / 7~9 여름 / 10~11 가을 ---------- */
+function getSeason(){
+  const m = new Date().getMonth() + 1;
+  if (m >= 12 || m <= 3) return "winter";
+  if (m <= 6) return "spring";
+  if (m <= 9) return "summer";
+  return "fall";
+}
+const KO = {winter:"겨울", spring:"봄", summer:"여름", fall:"가을"};
+const EN = {winter:"WINTER", spring:"SPRING", summer:"SUMMER", fall:"FALL"};
+const season = getSeason();
+const won = n => "₩" + n.toLocaleString("ko-KR");
+const noStr = n => "NO." + String(n).padStart(2,"0");
+
+document.getElementById("heroSeason").textContent =
+  EN[season] + " COLLECTION " + new Date().getFullYear();
+
+/* ---------- 메인: 현재 계절만 ---------- */
+const seasonal = products.filter(p => p.season === season);
+document.getElementById("shopTitle").textContent = EN[season];
+document.getElementById("shopCnt").textContent = seasonal.length + " ITEMS";
+document.getElementById("shopSub").textContent =
+  "";
+
+const grid = document.getElementById("productGrid");
+grid.innerHTML = seasonal.length
+  ? seasonal.map(p => `
+    <div class="card">
+      <span class="tag">${KO[p.season]}</span>
+      <div class="ph">
+        ${p.img ? `<img src="${p.img}" alt="${noStr(p.no)}">` : ""}
+        <span class="icon">＋</span>
+        <span class="hint">사진 넣기</span>
+      </div>
+      <div class="meta" style="display:block">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div class="no">${noStr(p.no)}</div><div class="tp">${p.type}</div></div>
+          <div class="pr">${won(p.price)}</div>
+        </div>
+        <button class="add-btn" onclick="addCart(${p.no})">담기</button>
+      </div>
+    </div>`).join("")
+  : `<div class="empty">이번 계절 상품이 아직 없어요.</div>`;
+
+/* ---------- 오늘의 추천: 날짜 시드로 매일 변경 ---------- */
+(function(){
+  const box = document.getElementById("todayCard");
+  const d = new Date();
+  document.getElementById("todayDate").textContent =
+    (d.getMonth()+1) + "." + d.getDate();
+  if (!seasonal.length){ box.innerHTML = `<div class="empty">추천할 상품이 없어요.</div>`; return; }
+  const seed = d.getFullYear()*1000 + (d.getMonth()+1)*50 + d.getDate();
+  const pick = seasonal[seed % seasonal.length];
+  document.getElementById("todaySub").textContent =
+    "";
+  box.innerHTML = `
+    <div class="ph">
+      ${pick.img ? `<img src="${pick.img}" alt="${noStr(pick.no)}">` : ""}
+      <span class="icon">＋</span>
+      <span class="hint">사진 넣기</span>
+    </div>
+    <div class="info">
+      <div class="lbl">${EN[pick.season]} · TODAY'S PICK</div>
+      <h3>${noStr(pick.no)}</h3>
+      <div class="tp">${pick.type}</div>
+      <div class="pr">${won(pick.price)}</div>
+      <button class="btn" onclick="addCart(${pick.no})">담기</button>
+    </div>`;
+})();
+
+/* ---------- 검색: 전체 상품 (번호/종류/계절) ---------- */
+const sInput = document.getElementById("searchInput");
+const sBox = document.getElementById("searchResults");
+sInput.addEventListener("input", () => {
+  const q = sInput.value.trim().toLowerCase();
+  if (!q){ sBox.classList.remove("open"); sBox.innerHTML=""; return; }
+  const hits = products.filter(p =>
+    String(p.no).includes(q) ||
+    noStr(p.no).toLowerCase().includes(q) ||
+    p.type.toLowerCase().includes(q) ||
+    KO[p.season].includes(q) ||
+    p.season.includes(q)
+  );
+  sBox.innerHTML = hits.length
+    ? hits.map(p => `
+      <div class="sr-item">
+        <div>
+          <div class="no">${noStr(p.no)}</div>
+          <div class="tp">${p.type}</div>
+        </div>
+        <div class="r">
+          <span class="tag">${KO[p.season]}</span>
+          <span class="pr">${won(p.price)}</span>
+        </div>
+      </div>`).join("")
+    : `<div class="sr-empty">검색 결과 없음</div>`;
+  sBox.classList.add("open");
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest(".searchbox")) sBox.classList.remove("open");
+});
+
+/* ---------- newsletter ---------- */
+function subscribe(){
+  const e = document.getElementById("email");
+  if (e.value && e.value.includes("@")){
+    e.value=""; e.placeholder="등록됐어요";
+  } else {
+    e.placeholder="이메일 주소를 확인해 주세요";
+  }
+}
+</script>
+<script src="https://js.tosspayments.com/v1/payment"></script>
+<script>
+/* ================= 장바구니 ================= */
+let cart = JSON.parse(localStorage.getItem("piku_cart") || "[]");
+
+function saveCart(){ localStorage.setItem("piku_cart", JSON.stringify(cart)); renderCart(); }
+function addCart(no){
+  const f = cart.find(c => c.no === no);
+  if (f) f.q += 1; else cart.push({no, q:1});
+  saveCart();
+  document.getElementById("cartPanel").classList.add("open");
+  document.getElementById("cartDim").classList.add("open");
+}
+function toggleCart(){
+  document.getElementById("cartPanel").classList.toggle("open");
+  document.getElementById("cartDim").classList.toggle("open");
+}
+function chgQty(no, d){
+  const f = cart.find(c => c.no === no);
+  if (!f) return;
+  f.q += d;
+  if (f.q <= 0) cart = cart.filter(c => c.no !== no);
+  saveCart();
+}
+function rmItem(no){ cart = cart.filter(c => c.no !== no); saveCart(); }
+
+function cartTotal(){
+  return cart.reduce((s,c) => {
+    const p = products.find(p => p.no === c.no);
+    return s + (p ? p.price * c.q : 0);
+  }, 0);
+}
+function renderCart(){
+  const box = document.getElementById("cartItems");
+  const cnt = cart.reduce((s,c)=>s+c.q,0);
+  document.getElementById("cartCnt").textContent = cnt;
+  document.getElementById("cartTotal").textContent = won(cartTotal());
+  document.getElementById("payBtn").disabled = !cart.length;
+  box.innerHTML = cart.length ? cart.map(c => {
+    const p = products.find(p => p.no === c.no);
+    return `
+    <div class="ci">
+      <div class="l"><div class="no">${noStr(p.no)}</div><div class="tp">${p.type}</div></div>
+      <div class="r">
+        <div class="qty">
+          <button onclick="chgQty(${p.no},-1)">−</button><span>${c.q}</span><button onclick="chgQty(${p.no},1)">＋</button>
+        </div>
+        <div class="pr">${won(p.price*c.q)}</div>
+        <button class="rm" onclick="rmItem(${p.no})">✕</button>
+      </div>
+    </div>`;
+  }).join("") : `<div class="cart-empty">장바구니가 비었어요</div>`;
+}
+renderCart();
+
+/* ================= 토스페이먼츠 결제 ================= */
+/* ▼ 테스트 키. 가맹점 심사 통과 후 live_ck_... 키로 교체 (README 참고) */
+const TOSS_CLIENT_KEY = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+
+function checkout(){
+  if (!cart.length) return;
+  const amount = cartTotal();
+  const orderId = "piku_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+  const itemsParam = encodeURIComponent(btoa(JSON.stringify(cart)));
+  const orderName = cart.length === 1
+    ? noStr(cart[0].no)
+    : noStr(cart[0].no) + " 외 " + (cart.length-1) + "건";
+
+  const toss = TossPayments(TOSS_CLIENT_KEY);
+  toss.requestPayment("카드", {
+    amount,
+    orderId,
+    orderName,
+    successUrl: location.origin + "/success.html?items=" + itemsParam,
+    failUrl: location.origin + "/fail.html",
+  }).catch(e => {
+    if (e.code !== "USER_CANCEL") alert("결제 요청 실패: " + e.message);
+  });
+}
+</script>
+</body>
+</html>
