@@ -26,11 +26,13 @@ export async function migrate(pool = createPool()): Promise<void> {
       [id, `${name}@system.local`, name],
     );
   }
-  await pool.query(
-    `INSERT INTO balances (user_id, asset, allow_negative) VALUES ($1, $2, true)
-     ON CONFLICT (user_id, asset) DO UPDATE SET allow_negative = true`,
-    [SYSTEM_USERS.INSURANCE, ASSET.QUOTE],
-  );
+  // 보험기금(KRW)과 수수료 계정(PIKU: 출금 네트워크 수수료를 부담)은 음수를 허용하고 대신 알림으로 감시한다
+  for (const [id, asset] of [[SYSTEM_USERS.INSURANCE, ASSET.QUOTE], [SYSTEM_USERS.POOL_FEE, ASSET.COIN]]) {
+    await pool.query(
+      `INSERT INTO balances (user_id, asset, allow_negative) VALUES ($1, $2, true)
+       ON CONFLICT (user_id, asset) DO UPDATE SET allow_negative = true`, [id, asset]);
+  }
+  await pool.query(`CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
   await pool.query(
     `INSERT INTO markets (id, kind, base, quote, status) VALUES ($1, 'spot', $3, $4, 'pre'), ($2, 'perp', $3, $4, 'pre')
      ON CONFLICT (id) DO NOTHING`,

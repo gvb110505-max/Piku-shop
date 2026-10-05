@@ -1,0 +1,78 @@
+# 코인 노드를 제외한 전체 서비스. 노드는 .env의 RPC_HOST/RPC_PORT로 연결한다.
+x-backend: &backend
+  build: ./backend
+  env_file: .env
+  environment:
+    DATABASE_URL: postgres://piku:${POSTGRES_PASSWORD:-piku}@postgres:5432/piku
+    REDIS_URL: redis://redis:6379
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  restart: unless-stopped
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: piku
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-piku}
+      POSTGRES_DB: piku
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U piku"]
+      interval: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://piku:${POSTGRES_PASSWORD:-piku}@postgres:5432/piku
+    command: ["node", "dist/db/migrate.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # 매칭 엔진: 반드시 1개만 (Redis 락으로도 강제)
+  engine:
+    <<: *backend
+    command: ["node", "dist/engine/main.js"]
+
+  api:
+    <<: *backend
+    command: ["node", "dist/api/main.js"]
+
+  stratum:
+    <<: *backend
+    command: ["node", "dist/stratum/main.js"]
+    ports: ["${STRATUM_PORT:-3333}:${STRATUM_PORT:-3333}"]
+
+  worker:
+    <<: *backend
+    command: ["node", "dist/worker/main.js"]
+
+  web:
+    build: ./frontend
+    ports: ["8000:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

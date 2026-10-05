@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   bitsToTarget, difficultyToTarget, hashToBigInt, merkleBranches, merkleRoot, merkleRootFromBranches,
-  serializeHeader, serializeHeight, sha256d, swapWords, targetToDifficulty,
+  serializeHeader, serializeHeight, sha256d, targetToDifficulty,
 } from '../src/core/stratum/bitcoin.js';
 import { buildBlockHex, checkShare, createJob, notifyParams, type BlockTemplate } from '../src/core/stratum/job.js';
+import { minerHeader } from './helpers/miner.js';
 
 describe('비트코인 직렬화', () => {
   it('제네시스 블록 헤더 해시가 일치한다', () => {
@@ -38,18 +39,6 @@ describe('비트코인 직렬화', () => {
     }
   });
 });
-
-/** 채굴 프로그램(cpuminer/cgminer)과 같은 방식으로 notify 파라미터만 가지고 헤더를 만든다. */
-function minerHeader(params: unknown[], en1: string, en2: string, nonce: number) {
-  const [, prevhash, coinb1, coinb2, branches, version, nbits, ntime] = params as [string, string, string, string, string[], string, string, string];
-  const coinbase = Buffer.from(coinb1 + en1 + en2 + coinb2, 'hex');
-  const root = branches.reduce((acc, b) => sha256d(Buffer.concat([acc, Buffer.from(b, 'hex')])), sha256d(coinbase));
-  const n = Buffer.alloc(4); n.writeUInt32LE(nonce);
-  return Buffer.concat([
-    Buffer.from(version, 'hex').reverse(), swapWords(Buffer.from(prevhash, 'hex')), root,
-    Buffer.from(ntime, 'hex').reverse(), Buffer.from(nbits, 'hex').reverse(), n,
-  ]);
-}
 
 describe('Stratum 작업 → 쉐어 → 블록', () => {
   const txs = [1, 2, 3].map((i) => {

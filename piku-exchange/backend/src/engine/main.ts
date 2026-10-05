@@ -26,9 +26,11 @@ async function main() {
   const got = await redis.set(LOCK_KEY, CONSUMER, 'EX', 15, 'NX');
   if (!got) throw new Error('다른 엔진 인스턴스가 실행 중입니다 (engine:leader)');
   const lockTimer = setInterval(async () => {
+    // 내가 주인이면 연장, 비어 있으면 다시 획득, 다른 인스턴스가 잡았으면 즉시 종료 (이중 엔진 방지)
     const owner = await redis.get(LOCK_KEY);
-    if (owner !== CONSUMER) { console.error('[engine] 리더 락을 잃었습니다. 종료합니다.'); process.exit(1); }
-    await redis.expire(LOCK_KEY, 15);
+    if (owner === CONSUMER) await redis.expire(LOCK_KEY, 15);
+    else if (owner === null && (await redis.set(LOCK_KEY, CONSUMER, 'EX', 15, 'NX'))) return;
+    else { console.error(`[engine] 다른 엔진(${owner})이 리더 락을 가졌습니다. 종료합니다.`); process.exit(1); }
   }, 5000);
 
   await redis.xgroup('CREATE', KEYS.ENGINE_STREAM, KEYS.ENGINE_GROUP, '0', 'MKSTREAM').catch((e: Error) => {
@@ -57,7 +59,8 @@ async function main() {
     timers.forEach(clearInterval);
     clearInterval(lockTimer);
     await engine.serial(async () => {});
-    await redis.del(LOCK_KEY);
+    // 내 락일 때만 삭제 (이미 새 인스턴스가 잡은 락을 지우지 않도록 비교 후 삭제)
+    await redis.eval(`if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end`, 1, LOCK_KEY, CONSUMER);
     process.exit(0);
   };
   process.on('SIGTERM', shutdown);

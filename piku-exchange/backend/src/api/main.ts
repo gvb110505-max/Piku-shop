@@ -7,7 +7,6 @@ import Fastify from 'fastify';
 import { ZodError } from 'zod';
 import { assertModeSafety, config } from '../config.js';
 import { createPool } from '../db/pool.js';
-import { migrate } from '../db/migrate.js';
 import { EngineClient } from '../lib/engineClient.js';
 import { ManualKycProvider } from '../lib/kyc.js';
 import { InsufficientFunds, UserError } from '../lib/ledger.js';
@@ -24,7 +23,6 @@ import { registerWs } from './ws.js';
 export async function buildApp() {
   assertModeSafety();
   const db = createPool();
-  await migrate(db);
   const redis = createRedis();
   const engine = new EngineClient(redis, createRedis());
   await engine.start();

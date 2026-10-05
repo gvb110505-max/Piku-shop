@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "PIKU mining pool + exchange backend",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && cp src/db/schema.sql dist/db/schema.sql",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "dev:api": "tsx watch src/api/main.ts",

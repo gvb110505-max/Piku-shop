@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .panel { @apply bg-panel border border-line rounded-lg; }
+  .panel-title { @apply px-3 py-2 border-b border-line text-sm font-semibold text-gray-300 flex items-center justify-between; }
+  .input { @apply w-full bg-bg border border-line rounded px-3 py-2 text-sm outline-none focus:border-brand; }
+  .btn { @apply px-3 py-2 rounded text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed; }
+  .btn-brand { @apply btn bg-brand text-black hover:brightness-110; }
+  .btn-up { @apply btn bg-up text-black hover:brightness-110; }
+  .btn-down { @apply btn bg-down text-white hover:brightness-110; }
+  .btn-ghost { @apply btn border border-line text-gray-300 hover:bg-line; }
+  .tbl { @apply w-full text-xs; }
+  .tbl th { @apply text-left font-normal text-muted px-2 py-1 border-b border-line; }
+  .tbl td { @apply px-2 py-1 border-b border-line/50 font-mono; }
+  .label { @apply text-xs text-muted mb-1 block; }
+  .tab { @apply px-3 py-1.5 text-sm rounded text-muted hover:text-gray-200; }
+  .tab-active { @apply bg-line text-white; }
+}

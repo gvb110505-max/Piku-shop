@@ -460,7 +460,7 @@ export class Engine {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
       [m.id, f.price.toString(), f.qty.toString(), f.takerSide, f.makerOrderId, f.takerOrderId, f.makerUserId, f.takerUserId, kind],
     );
-    await audit(c, { action: 'trade', userId: f.takerUserId, details: { tradeId: rows[0].id, market: m.id, price: f.price, qty: f.qty, maker: f.makerUserId, taker: f.takerUserId, kind } });
+    await audit(c, { action: 'trade', userId: f.takerUserId, details: { tradeId: rows[0].id, market: m.id, price: fromUnits(f.price), qty: fromUnits(f.qty), maker: f.makerUserId, taker: f.takerUserId, kind } });
     return Number(rows[0].id);
   }
 
@@ -847,7 +847,7 @@ export class Engine {
       `INSERT INTO liquidations (user_id, market_id, qty, entry_price, mark_price, margin, equity, fee, insurance_delta)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [userId, marketId, cur.qty.toString(), cur.entryPrice.toString(), mark.toString(), pos.margin.toString(), r.equity.toString(), r.fee.toString(), r.insuranceDelta.toString()]);
-    await audit(c, { action: 'perp.liquidation', userId, details: { marketId, qty: cur.qty, entry: cur.entryPrice, mark, equity: r.equity, fee: r.fee, insuranceDelta: r.insuranceDelta } });
+    await audit(c, { action: 'perp.liquidation', userId, details: { marketId, qty: fromUnits(cur.qty), entry: fromUnits(cur.entryPrice), mark: fromUnits(mark), equity: fromUnits(r.equity), fee: fromUnits(r.fee), insuranceDelta: fromUnits(r.insuranceDelta) } });
     if (r.insuranceDelta < 0n) {
       const ins = await getBalance(c, SYSTEM_USERS.INSURANCE, ASSET.QUOTE);
       if (ins.available < 0n) {
@@ -936,7 +936,7 @@ export class Engine {
     const insuranceDelta = collected - distributed;
     await adjustBalance(c, SYSTEM_USERS.INSURANCE, ASSET.QUOTE, insuranceDelta, 0n, 'funding_residual', eventId);
     await c.query('UPDATE funding_events SET total_paid = $2, insurance_delta = $3 WHERE id = $1', [eventId, collected.toString(), insuranceDelta.toString()]);
-    await audit(c, { action: 'perp.funding', details: { rate, mark, collected, distributed } });
+    await audit(c, { action: 'perp.funding', details: { ratePpm: Number(rate), mark: fromUnits(mark), collected: fromUnits(collected), distributed: fromUnits(distributed) } });
     return { ratePpm: Number(rate), collected: fromUnits(collected), distributed: fromUnits(distributed) };
   }
 
