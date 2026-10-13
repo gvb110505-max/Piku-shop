@@ -210,6 +210,11 @@ input::placeholder{color:#4a4a4a}
 .ph .hint{color:var(--black);opacity:.85}
 
 
+/* ---------- links ---------- */
+a.card,a.sr-item{color:inherit;text-decoration:none}
+a.card{display:block}
+.today a.btn{text-decoration:none;display:inline-block}
+
 /* ---------- buy (instagram) ---------- */
 .buy-fab{
   position:fixed;right:20px;bottom:20px;z-index:120;
@@ -364,41 +369,8 @@ nav{background:rgba(255,255,255,.96) !important}
   </div>
 </footer>
 
+<script src="products.js"></script>
 <script>
-/* ▼ 인스타그램 아이디 — 여기만 바꾸면 사이트 전체에 적용됨 (@ 빼고 입력) */
-const INSTA_ID = "piku.shop";
-
-/* ============================================================
-   상품 등록소 — 이름 없이 번호로만 관리
-   no: 상품 번호 / season: "winter" "spring" "summer" "fall"
-   img: "" 비워두면 placeholder, 사진 파일명 넣으면 표시됨
-   ============================================================ */
-const products = [
-  // ---- 겨울 (12~3월) ----
-  {no:1,  type:"Outer",  price:59000, season:"winter", img:""},
-  {no:2,  type:"Outer",  price:89000, season:"winter", img:""},
-  {no:3,  type:"Top",    price:42000, season:"winter", img:""},
-  {no:4,  type:"Bottom", price:45000, season:"winter", img:""},
-
-  // ---- 봄 (4~6월) ----
-  {no:5,  type:"Outer",  price:55000, season:"spring", img:""},
-  {no:6,  type:"Top",    price:38000, season:"spring", img:""},
-  {no:7,  type:"Bottom", price:43000, season:"spring", img:""},
-  {no:8,  type:"Top",    price:41000, season:"spring", img:""},
-
-  // ---- 여름 (7~9월) ----
-  {no:9,  type:"Top",    price:29000, season:"summer", img:""},
-  {no:10, type:"Bottom", price:36000, season:"summer", img:""},
-  {no:11, type:"Top",    price:25000, season:"summer", img:""},
-  {no:12, type:"Bottom", price:33000, season:"summer", img:""},
-
-  // ---- 가을 (10~11월) ----
-  {no:13, type:"Outer",  price:69000, season:"fall", img:""},
-  {no:14, type:"Top",    price:42000, season:"fall", img:""},
-  {no:15, type:"Bottom", price:45000, season:"fall", img:""},
-  {no:16, type:"Bottom", price:47000, season:"fall", img:""},
-];
-
 /* ---------- 계절 판별: 12~3 겨울 / 4~6 봄 / 7~9 여름 / 10~11 가을 ---------- */
 function getSeason(){
   const m = new Date().getMonth() + 1;
@@ -407,11 +379,7 @@ function getSeason(){
   if (m <= 9) return "summer";
   return "fall";
 }
-const KO = {winter:"겨울", spring:"봄", summer:"여름", fall:"가을"};
-const EN = {winter:"WINTER", spring:"SPRING", summer:"SUMMER", fall:"FALL"};
 const season = getSeason();
-const won = n => "₩" + n.toLocaleString("ko-KR");
-const noStr = n => "NO." + String(n).padStart(2,"0");
 
 document.getElementById("heroSeason").textContent =
   EN[season] + " COLLECTION " + new Date().getFullYear();
@@ -426,7 +394,7 @@ document.getElementById("shopSub").textContent =
 const grid = document.getElementById("productGrid");
 grid.innerHTML = seasonal.length
   ? seasonal.map(p => `
-    <div class="card" onclick="openBuy(${p.no})">
+    <a class="card" href="${detailUrl(p.no)}">
       <span class="tag">${KO[p.season]}</span>
       <div class="ph">
         ${p.img ? `<img src="${p.img}" alt="${noStr(p.no)}">` : ""}
@@ -439,7 +407,7 @@ grid.innerHTML = seasonal.length
           <div class="pr">${won(p.price)}</div>
         </div>
       </div>
-    </div>`).join("")
+    </a>`).join("")
   : `<div class="empty">이번 계절 상품이 아직 없어요.</div>`;
 
 /* ---------- 오늘의 추천: 날짜 시드로 매일 변경 ---------- */
@@ -464,7 +432,7 @@ grid.innerHTML = seasonal.length
       <h3>${noStr(pick.no)}</h3>
       <div class="tp">${pick.type}</div>
       <div class="pr">${won(pick.price)}</div>
-      <button class="btn" onclick="openBuy(${pick.no})">구매하기</button>
+      <a class="btn" href="${detailUrl(pick.no)}">자세히 보기</a>
     </div>`;
 })();
 
@@ -483,7 +451,7 @@ sInput.addEventListener("input", () => {
   );
   sBox.innerHTML = hits.length
     ? hits.map(p => `
-      <div class="sr-item">
+      <a class="sr-item" href="${detailUrl(p.no)}">
         <div>
           <div class="no">${noStr(p.no)}</div>
           <div class="tp">${p.type}</div>
@@ -492,7 +460,7 @@ sInput.addEventListener("input", () => {
           <span class="tag">${KO[p.season]}</span>
           <span class="pr">${won(p.price)}</span>
         </div>
-      </div>`).join("")
+      </a>`).join("")
     : `<div class="sr-empty">검색 결과 없음</div>`;
   sBox.classList.add("open");
 });
@@ -512,7 +480,6 @@ function subscribe(){
 </script>
 <script>
 /* ================= 구매 안내 (인스타그램) ================= */
-const INSTA_URL = "https://instagram.com/" + INSTA_ID;
 document.getElementById("buyId").textContent = "@" + INSTA_ID;
 document.getElementById("stripId").textContent = "@" + INSTA_ID;
 document.getElementById("buyLink").href = INSTA_URL;
