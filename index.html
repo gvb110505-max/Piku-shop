@@ -255,13 +255,13 @@ nav{background:rgba(255,255,255,.96) !important}
     <div class="lbl">HOW TO BUY</div>
     <h3>구매는<br>인스타그램 프로필에서</h3>
     <div class="id" id="buyId"></div>
-    <p id="buyMsg">원하는 상품 번호(NO.)와 사이즈를<br>인스타그램 DM으로 보내주세요.</p>
-    <a id="buyLink" href="#" target="_blank" rel="noopener">인스타그램 바로가기</a>
+    <p id="buyMsg">인스타그램 프로필에서<br>바로 구매하실 수 있어요.</p>
+    <a id="buyLink" href="#" target="_blank" rel="noopener">인스타그램에서 구매하기</a>
   </div>
 </div>
 <button class="buy-fab" onclick="openBuy()">구매하기<small>구매는 인스타 프로필</small></button>
 
-<div class="strip">구매는 인스타그램 프로필 DM으로 · <span id="stripId"></span></div>
+<div class="strip">구매는 인스타그램 프로필에서 · <span id="stripId"></span></div>
 
 <nav>
   <div class="nav-in">
@@ -520,8 +520,8 @@ document.querySelectorAll(".insta-link").forEach(a => a.href = INSTA_URL);
 
 function openBuy(no){
   document.getElementById("buyMsg").innerHTML = no
-    ? `<b>${noStr(no)}</b> 상품 번호와 사이즈를<br>인스타그램 DM으로 보내주세요.`
-    : "원하는 상품 번호(NO.)와 사이즈를<br>인스타그램 DM으로 보내주세요.";
+    ? `<b>${noStr(no)}</b> 상품은<br>인스타그램 프로필에서 바로 구매하실 수 있어요.`
+    : "인스타그램 프로필에서<br>바로 구매하실 수 있어요.";
   document.getElementById("buyDim").classList.add("open");
 }
 function closeBuy(){ document.getElementById("buyDim").classList.remove("open"); }
