@@ -480,10 +480,15 @@ function subscribe(){
 </script>
 <script>
 /* ================= 구매 안내 (인스타그램) ================= */
-document.getElementById("buyId").textContent = "@" + INSTA_ID;
-document.getElementById("stripId").textContent = "@" + INSTA_ID;
-document.getElementById("buyLink").href = INSTA_URL;
-document.querySelectorAll(".insta-link").forEach(a => a.href = INSTA_URL);
+document.getElementById("buyId").textContent = INSTA_LABEL;
+document.getElementById("stripId").textContent = INSTA_LABEL;
+if (INSTA_URL) {
+  document.getElementById("buyLink").href = INSTA_URL;
+  document.querySelectorAll(".insta-link").forEach(a => a.href = INSTA_URL);
+} else {
+  document.getElementById("buyLink").style.display = "none";
+  document.querySelectorAll(".insta-link").forEach(a => a.style.display = "none");
+}
 
 function openBuy(no){
   document.getElementById("buyMsg").innerHTML = no

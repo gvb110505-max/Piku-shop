@@ -1,7 +1,7 @@
 /* PIKU 상품 데이터 — index.html, product.html 공용 */
 
 /* ▼ 인스타그램 아이디 — 여기만 바꾸면 사이트 전체에 적용됨 (@ 빼고 입력) */
-const INSTA_ID = "piku.shop";
+const INSTA_ID = "";  // 비워두면 링크 없이 "준비 중"으로 표시
 
 /* ============================================================
    상품 등록소 — 이름 없이 번호로만 관리
@@ -44,5 +44,6 @@ const KO = {winter:"겨울", spring:"봄", summer:"여름", fall:"가을"};
 const EN = {winter:"WINTER", spring:"SPRING", summer:"SUMMER", fall:"FALL"};
 const won = n => "₩" + n.toLocaleString("ko-KR");
 const noStr = n => "NO." + String(n).padStart(2,"0");
-const INSTA_URL = "https://instagram.com/" + INSTA_ID;
+const INSTA_URL = INSTA_ID ? "https://instagram.com/" + INSTA_ID : "";
+const INSTA_LABEL = INSTA_ID ? "@" + INSTA_ID : "계정 준비 중";
 const detailUrl = no => "product.html?no=" + no;

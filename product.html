@@ -116,7 +116,7 @@ footer{border-top:1px solid var(--gray1);text-align:center;padding:30px 16px;col
 <script src="products.js"></script>
 <script>
 const main = document.getElementById("main");
-document.getElementById("stripId").textContent = "@" + INSTA_ID;
+document.getElementById("stripId").textContent = INSTA_LABEL;
 
 const no = Number(new URLSearchParams(location.search).get("no"));
 const idx = products.findIndex(p => p.no === no);
@@ -159,8 +159,8 @@ if (!p) {
         ${p.desc ? `<p class="desc">${p.desc}</p>` : ""}
         <div class="buy">
           <div class="t">구매는 인스타그램 프로필에서</div>
-          <div class="s">@${INSTA_ID} 프로필에서 바로 구매하실 수 있어요.</div>
-          <a href="${INSTA_URL}" target="_blank" rel="noopener">인스타그램에서 구매하기</a>
+          <div class="s">${INSTA_URL ? INSTA_LABEL + " 프로필에서 바로 구매하실 수 있어요." : "인스타그램 계정 준비 중이에요."}</div>
+          ${INSTA_URL ? `<a href="${INSTA_URL}" target="_blank" rel="noopener">인스타그램에서 구매하기</a>` : ""}
         </div>
       </div>
     </div>
