@@ -177,7 +177,7 @@ section{max-width:1200px;margin:0 auto;padding:70px 24px}
 .signup button:hover{opacity:.85}
 
 /* ---------- footer ---------- */
-footer{max-width:1200px;margin:0 auto;padding:56px 24px 40px}
+footer{max-width:1200px;margin:0 auto;padding:56px 24px 100px}
 .foot-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:36px;margin-bottom:44px}
 .foot-brand{font-size:24px;font-weight:800;letter-spacing:6px}
 .foot-cols{display:flex;gap:70px}
@@ -210,47 +210,35 @@ input::placeholder{color:#4a4a4a}
 .ph .hint{color:var(--black);opacity:.85}
 
 
-/* ---------- cart ---------- */
-.cart-btn{
-  background:none;border:1px solid var(--black);padding:9px 16px;
-  font-size:11px;letter-spacing:2px;font-weight:700;cursor:pointer;color:var(--black);
-  white-space:nowrap;
+/* ---------- links ---------- */
+a.card,a.sr-item{color:inherit;text-decoration:none}
+a.card{display:block}
+.today a.btn{text-decoration:none;display:inline-block}
+
+/* ---------- buy (instagram) ---------- */
+.buy-fab{
+  position:fixed;right:20px;bottom:20px;z-index:120;
+  background:#0d0d0d !important;color:#fff !important;border:none;
+  padding:16px 28px;font-size:12px;letter-spacing:3px;font-weight:700;cursor:pointer;
+  box-shadow:4px 4px 0 rgba(0,0,0,.15);transition:opacity .2s;
 }
-.cart-btn span{background:var(--black);color:#fff;padding:1px 7px;margin-left:4px;font-size:10px}
-.cart-panel{
-  position:fixed;top:0;right:-380px;width:min(380px,92vw);height:100vh;z-index:200;
-  background:#fff !important;border-left:1px solid var(--black);
-  display:flex;flex-direction:column;transition:right .25s;
+.buy-fab:hover{opacity:.85}
+.buy-fab small{display:block;font-size:10px;letter-spacing:1px;font-weight:400;opacity:.75;margin-top:4px}
+.buy-dim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.buy-dim.open{display:flex}
+.buy-modal{
+  background:#fff !important;border:1px solid var(--black);width:min(380px,100%);
+  padding:40px 30px 30px;text-align:center;position:relative;
 }
-.cart-panel.open{right:0}
-.cart-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--gray1)}
-.cart-head h3{font-size:13px;letter-spacing:3px;font-weight:800}
-.cart-head button{background:none;border:none;font-size:20px;cursor:pointer;color:var(--black)}
-.cart-items{flex:1;overflow-y:auto;padding:10px 22px}
-.ci{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--gray1);gap:10px}
-.ci .l .no{font-weight:700;font-size:13px;letter-spacing:1px}
-.ci .l .tp{font-size:10px;color:var(--gray2);letter-spacing:1px;margin-top:2px}
-.ci .r{display:flex;align-items:center;gap:12px}
-.ci .qty{display:flex;align-items:center;gap:8px}
-.ci .qty button{width:22px;height:22px;border:1px solid var(--gray1);background:none;cursor:pointer;font-size:13px;color:var(--black)}
-.ci .pr{font-size:13px;font-weight:600;min-width:70px;text-align:right}
-.ci .rm{background:none;border:none;color:var(--gray2);cursor:pointer;font-size:14px}
-.cart-empty{text-align:center;color:var(--gray2);font-size:12px;letter-spacing:1px;padding:50px 0}
-.cart-foot{border-top:1px solid var(--black);padding:20px 22px}
-.cart-total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:16px}
-.cart-pay{
-  width:100%;background:var(--black);color:#fff;border:none;
-  padding:15px;font-size:12px;letter-spacing:3px;font-weight:700;cursor:pointer;
+.buy-modal .x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--black)}
+.buy-modal .lbl{font-size:10px;letter-spacing:4px;color:var(--gray2);margin-bottom:14px}
+.buy-modal h3{font-size:20px;font-weight:800;letter-spacing:2px;margin-bottom:16px;line-height:1.5}
+.buy-modal .id{font-size:18px;font-weight:700;margin-bottom:14px}
+.buy-modal p{font-size:12px;color:var(--gray3);line-height:1.9;margin-bottom:24px}
+.buy-modal a{
+  display:block;background:#0d0d0d !important;color:#fff !important;text-decoration:none;
+  padding:14px;font-size:12px;letter-spacing:3px;font-weight:700;
 }
-.cart-pay:disabled{opacity:.4;cursor:default}
-.add-btn{
-  width:100%;background:none;border:1px solid var(--black);color:var(--black);
-  padding:10px;font-size:11px;letter-spacing:2px;font-weight:600;cursor:pointer;margin-top:10px;
-  transition:background .15s,color .15s;
-}
-.add-btn:hover{background:var(--black);color:#fff}
-.cart-dim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:150;display:none}
-.cart-dim.open{display:block}
 
 /* 다크모드 강제 무효화 */
 html,body{background:#ffffff !important;color:#0d0d0d !important}
@@ -266,20 +254,19 @@ nav{background:rgba(255,255,255,.96) !important}
 </head>
 <body style="background:#ffffff !important;color:#0d0d0d !important">
 
-<div class="cart-dim" id="cartDim" onclick="toggleCart()"></div>
-<aside class="cart-panel" id="cartPanel">
-  <div class="cart-head">
-    <h3>CART</h3>
-    <button onclick="toggleCart()">✕</button>
+<div class="buy-dim" id="buyDim" onclick="if(event.target===this)closeBuy()">
+  <div class="buy-modal">
+    <button class="x" onclick="closeBuy()">✕</button>
+    <div class="lbl">HOW TO BUY</div>
+    <h3>구매는<br>인스타그램 프로필에서</h3>
+    <div class="id" id="buyId"></div>
+    <p id="buyMsg">인스타그램 프로필에서<br>바로 구매하실 수 있어요.</p>
+    <a id="buyLink" href="#" target="_blank" rel="noopener">인스타그램에서 구매하기</a>
   </div>
-  <div class="cart-items" id="cartItems"></div>
-  <div class="cart-foot">
-    <div class="cart-total"><span>TOTAL</span><span id="cartTotal">₩0</span></div>
-    <button class="cart-pay" id="payBtn" onclick="checkout()">결제하기</button>
-  </div>
-</aside>
+</div>
+<button class="buy-fab" onclick="openBuy()">구매하기<small>구매는 인스타 프로필</small></button>
 
-<div class="strip">FREE SHIPPING ON ORDERS OVER ₩50,000</div>
+<div class="strip">구매는 인스타그램 프로필에서 · <span id="stripId"></span></div>
 
 <nav>
   <div class="nav-in">
@@ -289,7 +276,6 @@ nav{background:rgba(255,255,255,.96) !important}
       <span class="sicon">⌕</span>
       <div class="search-results" id="searchResults"></div>
     </div>
-    <button class="cart-btn" onclick="toggleCart()">CART <span id="cartCnt">0</span></button>
     <ul class="navlinks">
       <li><a href="#shop">Shop</a></li>
       <li><a href="#lookbook">Lookbook</a></li>
@@ -372,7 +358,7 @@ nav{background:rgba(255,255,255,.96) !important}
       </div>
       <div>
         <h4>Follow</h4>
-        <a href="#">Instagram</a>
+        <a href="#" class="insta-link" target="_blank" rel="noopener">Instagram</a>
         <a href="#">YouTube</a>
       </div>
     </div>
@@ -383,38 +369,8 @@ nav{background:rgba(255,255,255,.96) !important}
   </div>
 </footer>
 
+<script src="products.js"></script>
 <script>
-/* ============================================================
-   상품 등록소 — 이름 없이 번호로만 관리
-   no: 상품 번호 / season: "winter" "spring" "summer" "fall"
-   img: "" 비워두면 placeholder, 사진 파일명 넣으면 표시됨
-   ============================================================ */
-const products = [
-  // ---- 겨울 (12~3월) ----
-  {no:1,  type:"Outer",  price:59000, season:"winter", img:""},
-  {no:2,  type:"Outer",  price:89000, season:"winter", img:""},
-  {no:3,  type:"Top",    price:42000, season:"winter", img:""},
-  {no:4,  type:"Bottom", price:45000, season:"winter", img:""},
-
-  // ---- 봄 (4~6월) ----
-  {no:5,  type:"Outer",  price:55000, season:"spring", img:""},
-  {no:6,  type:"Top",    price:38000, season:"spring", img:""},
-  {no:7,  type:"Bottom", price:43000, season:"spring", img:""},
-  {no:8,  type:"Top",    price:41000, season:"spring", img:""},
-
-  // ---- 여름 (7~9월) ----
-  {no:9,  type:"Top",    price:29000, season:"summer", img:""},
-  {no:10, type:"Bottom", price:36000, season:"summer", img:""},
-  {no:11, type:"Top",    price:25000, season:"summer", img:""},
-  {no:12, type:"Bottom", price:33000, season:"summer", img:""},
-
-  // ---- 가을 (10~11월) ----
-  {no:13, type:"Outer",  price:69000, season:"fall", img:""},
-  {no:14, type:"Top",    price:42000, season:"fall", img:""},
-  {no:15, type:"Bottom", price:45000, season:"fall", img:""},
-  {no:16, type:"Bottom", price:47000, season:"fall", img:""},
-];
-
 /* ---------- 계절 판별: 12~3 겨울 / 4~6 봄 / 7~9 여름 / 10~11 가을 ---------- */
 function getSeason(){
   const m = new Date().getMonth() + 1;
@@ -423,11 +379,7 @@ function getSeason(){
   if (m <= 9) return "summer";
   return "fall";
 }
-const KO = {winter:"겨울", spring:"봄", summer:"여름", fall:"가을"};
-const EN = {winter:"WINTER", spring:"SPRING", summer:"SUMMER", fall:"FALL"};
 const season = getSeason();
-const won = n => "₩" + n.toLocaleString("ko-KR");
-const noStr = n => "NO." + String(n).padStart(2,"0");
 
 document.getElementById("heroSeason").textContent =
   EN[season] + " COLLECTION " + new Date().getFullYear();
@@ -442,7 +394,7 @@ document.getElementById("shopSub").textContent =
 const grid = document.getElementById("productGrid");
 grid.innerHTML = seasonal.length
   ? seasonal.map(p => `
-    <div class="card">
+    <a class="card" href="${detailUrl(p.no)}">
       <span class="tag">${KO[p.season]}</span>
       <div class="ph">
         ${p.img ? `<img src="${p.img}" alt="${noStr(p.no)}">` : ""}
@@ -454,9 +406,8 @@ grid.innerHTML = seasonal.length
           <div><div class="no">${noStr(p.no)}</div><div class="tp">${p.type}</div></div>
           <div class="pr">${won(p.price)}</div>
         </div>
-        <button class="add-btn" onclick="addCart(${p.no})">담기</button>
       </div>
-    </div>`).join("")
+    </a>`).join("")
   : `<div class="empty">이번 계절 상품이 아직 없어요.</div>`;
 
 /* ---------- 오늘의 추천: 날짜 시드로 매일 변경 ---------- */
@@ -481,7 +432,7 @@ grid.innerHTML = seasonal.length
       <h3>${noStr(pick.no)}</h3>
       <div class="tp">${pick.type}</div>
       <div class="pr">${won(pick.price)}</div>
-      <button class="btn" onclick="addCart(${pick.no})">담기</button>
+      <a class="btn" href="${detailUrl(pick.no)}">자세히 보기</a>
     </div>`;
 })();
 
@@ -500,7 +451,7 @@ sInput.addEventListener("input", () => {
   );
   sBox.innerHTML = hits.length
     ? hits.map(p => `
-      <div class="sr-item">
+      <a class="sr-item" href="${detailUrl(p.no)}">
         <div>
           <div class="no">${noStr(p.no)}</div>
           <div class="tp">${p.type}</div>
@@ -509,7 +460,7 @@ sInput.addEventListener("input", () => {
           <span class="tag">${KO[p.season]}</span>
           <span class="pr">${won(p.price)}</span>
         </div>
-      </div>`).join("")
+      </a>`).join("")
     : `<div class="sr-empty">검색 결과 없음</div>`;
   sBox.classList.add("open");
 });
@@ -527,85 +478,21 @@ function subscribe(){
   }
 }
 </script>
-<script src="https://js.tosspayments.com/v1/payment"></script>
 <script>
-/* ================= 장바구니 ================= */
-let cart = JSON.parse(localStorage.getItem("piku_cart") || "[]");
+/* ================= 구매 안내 (인스타그램) ================= */
+document.getElementById("buyId").textContent = "@" + INSTA_ID;
+document.getElementById("stripId").textContent = "@" + INSTA_ID;
+document.getElementById("buyLink").href = INSTA_URL;
+document.querySelectorAll(".insta-link").forEach(a => a.href = INSTA_URL);
 
-function saveCart(){ localStorage.setItem("piku_cart", JSON.stringify(cart)); renderCart(); }
-function addCart(no){
-  const f = cart.find(c => c.no === no);
-  if (f) f.q += 1; else cart.push({no, q:1});
-  saveCart();
-  document.getElementById("cartPanel").classList.add("open");
-  document.getElementById("cartDim").classList.add("open");
+function openBuy(no){
+  document.getElementById("buyMsg").innerHTML = no
+    ? `<b>${noStr(no)}</b> 상품은<br>인스타그램 프로필에서 바로 구매하실 수 있어요.`
+    : "인스타그램 프로필에서<br>바로 구매하실 수 있어요.";
+  document.getElementById("buyDim").classList.add("open");
 }
-function toggleCart(){
-  document.getElementById("cartPanel").classList.toggle("open");
-  document.getElementById("cartDim").classList.toggle("open");
-}
-function chgQty(no, d){
-  const f = cart.find(c => c.no === no);
-  if (!f) return;
-  f.q += d;
-  if (f.q <= 0) cart = cart.filter(c => c.no !== no);
-  saveCart();
-}
-function rmItem(no){ cart = cart.filter(c => c.no !== no); saveCart(); }
-
-function cartTotal(){
-  return cart.reduce((s,c) => {
-    const p = products.find(p => p.no === c.no);
-    return s + (p ? p.price * c.q : 0);
-  }, 0);
-}
-function renderCart(){
-  const box = document.getElementById("cartItems");
-  const cnt = cart.reduce((s,c)=>s+c.q,0);
-  document.getElementById("cartCnt").textContent = cnt;
-  document.getElementById("cartTotal").textContent = won(cartTotal());
-  document.getElementById("payBtn").disabled = !cart.length;
-  box.innerHTML = cart.length ? cart.map(c => {
-    const p = products.find(p => p.no === c.no);
-    return `
-    <div class="ci">
-      <div class="l"><div class="no">${noStr(p.no)}</div><div class="tp">${p.type}</div></div>
-      <div class="r">
-        <div class="qty">
-          <button onclick="chgQty(${p.no},-1)">−</button><span>${c.q}</span><button onclick="chgQty(${p.no},1)">＋</button>
-        </div>
-        <div class="pr">${won(p.price*c.q)}</div>
-        <button class="rm" onclick="rmItem(${p.no})">✕</button>
-      </div>
-    </div>`;
-  }).join("") : `<div class="cart-empty">장바구니가 비었어요</div>`;
-}
-renderCart();
-
-/* ================= 토스페이먼츠 결제 ================= */
-/* ▼ 테스트 키. 가맹점 심사 통과 후 live_ck_... 키로 교체 (README 참고) */
-const TOSS_CLIENT_KEY = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
-
-function checkout(){
-  if (!cart.length) return;
-  const amount = cartTotal();
-  const orderId = "piku_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
-  const itemsParam = encodeURIComponent(btoa(JSON.stringify(cart)));
-  const orderName = cart.length === 1
-    ? noStr(cart[0].no)
-    : noStr(cart[0].no) + " 외 " + (cart.length-1) + "건";
-
-  const toss = TossPayments(TOSS_CLIENT_KEY);
-  toss.requestPayment("카드", {
-    amount,
-    orderId,
-    orderName,
-    successUrl: location.origin + "/success.html?items=" + itemsParam,
-    failUrl: location.origin + "/fail.html",
-  }).catch(e => {
-    if (e.code !== "USER_CANCEL") alert("결제 요청 실패: " + e.message);
-  });
-}
+function closeBuy(){ document.getElementById("buyDim").classList.remove("open"); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeBuy(); });
 </script>
 </body>
 </html>
