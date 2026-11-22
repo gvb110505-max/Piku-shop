@@ -1,0 +1,59 @@
+:root {
+  --bg: #0e1220;
+  --card: rgba(18, 22, 38, 0.86);
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #eef1ff;
+  --muted: #9aa3c7;
+  --accent: #ffb547;
+  --accent-ink: #2a1900;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+.screen { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px;
+  background: radial-gradient(ellipse at center, rgba(14,18,32,0.35), rgba(14,18,32,0.85)); z-index: 10; }
+.hidden { display: none !important; }
+
+.menu-card { width: min(380px, 100%); padding: 32px 28px; border-radius: 20px; background: var(--card);
+  border: 1px solid var(--line); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+.menu-card.small { width: min(320px, 100%); text-align: center; }
+.menu-card h2 { margin: 0 0 8px; }
+
+.logo { margin: 0; font-size: 44px; letter-spacing: 2px; line-height: 1; font-weight: 900; }
+.logo span { display: block; font-size: 22px; letter-spacing: 10px; color: var(--accent); margin-top: 6px; }
+.tagline { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+
+.name-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.name-field input { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: rgba(255,255,255,0.05); color: var(--text); font-size: 16px; outline: none; }
+.name-field input:focus { border-color: var(--accent); }
+
+.color-pick { display: flex; gap: 10px; margin: 4px 0 8px; }
+.color-pick button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+  outline-offset: 2px; }
+.color-pick button.active { border-color: #fff; transform: scale(1.12); }
+
+.btn { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,0.06);
+  color: var(--text); font-size: 16px; font-weight: 700; cursor: pointer; transition: transform .08s, background .15s; }
+.btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.primary:hover { background: #ffc46b; }
+.btn:disabled, .btn.locked { opacity: 0.45; cursor: not-allowed; }
+.btn small { font-weight: 500; font-size: 12px; margin-left: 6px; color: var(--muted); }
+
+.hint { margin: 8px 0 0; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
+.result-text { color: var(--muted); margin: 0 0 8px; line-height: 1.6; }
+
+#hud { position: fixed; top: 16px; left: 16px; right: 16px; display: flex; gap: 10px; z-index: 5; pointer-events: none; }
+.hud-box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px;
+  display: flex; gap: 10px; align-items: baseline; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hud-box .label { font-size: 12px; color: var(--muted); font-weight: 600; }
+#clickToPlay { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); background: var(--card);
+  padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; }
+
+.toast { position: fixed; left: 50%; top: 24px; transform: translateX(-50%); background: var(--card);
+  border: 1px solid var(--line); padding: 10px 18px; border-radius: 999px; z-index: 30; font-size: 14px; }
