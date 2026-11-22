@@ -1,0 +1,751 @@
+<title>열사의 행성</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: 풀스크린 3D 스테이지 위에 HUD 레이어를 얹은 구조. 단일 다크 룩(게임 화면)으로 의도적으로 고정. */
+:root {
+  --bg: #0a0c15;
+  --panel: rgba(10, 12, 22, 0.74);
+  --line: rgba(255, 255, 255, 0.16);
+  --fg: #f3eee6;
+  --muted: #aaa7b6;
+  --accent: #ffb23f;
+  --danger: #ff4a36;
+  --water: #5cc2ff;
+  color-scheme: dark;
+  --font: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); overflow: hidden; }
+#stage { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg); user-select: none; -webkit-user-select: none; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+#c.drag { cursor: grabbing; }
+.layer { position: absolute; inset: 0; pointer-events: none; }
+.pad { padding: 14px max(16px, env(safe-area-inset-left, 0px)) 14px max(16px, env(safe-area-inset-right, 0px)); }
+
+#vignette { background: radial-gradient(ellipse at center, rgba(255,70,20,0) 38%, rgba(200,15,5,0.96) 100%); opacity: 0; }
+#tint { background: #ff7a1a; opacity: 0; mix-blend-mode: soft-light; }
+#fade { background: #000; opacity: 1; z-index: 8; }
+
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(4px); }
+#hud-top { bottom: auto; align-content: flex-start; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; z-index: 3; }
+#hud-left, #hud-right { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 0 1 280px; }
+#hud-right { align-items: flex-end; text-align: right; }
+#hud-mid { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.chip { padding: 6px 12px; font-size: 15px; font-weight: 500; }
+.chip b { font-weight: 900; font-variant-numeric: tabular-nums; }
+#objective { padding: 10px 18px; font-size: clamp(14px, 2.2vw, 20px); font-weight: 700; text-align: center; max-width: 100%; }
+#objective[hidden] { display: none; }
+#watergauge { width: 100%; max-width: 220px; height: 26px; position: relative; overflow: hidden; }
+#waterfill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--water); opacity: .9; transition: width .3s; }
+#waterlabel { position: relative; font-size: 12px; text-align: center; line-height: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+#timer { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; padding: 6px 12px; }
+#sunwarn { color: var(--danger); font-weight: 900; font-size: 15px; }
+
+#heat { width: min(420px, 90%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#survival { color: var(--danger); font-weight: 900; font-size: clamp(20px, 3.4vw, 34px); text-shadow: 0 2px 8px #000; font-variant-numeric: tabular-nums; }
+#heatbar { width: 100%; height: 12px; border-radius: 6px; background: rgba(0,0,0,.55); overflow: hidden; border: 1px solid var(--line); }
+#heatfill { height: 100%; width: 0; background: var(--danger); }
+
+#bottom { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 4; padding: 0 max(16px, env(safe-area-inset-left, 0px)) 18px max(16px, env(safe-area-inset-right, 0px)); pointer-events: none; }
+#prompt { font-size: 18px; font-weight: 700; padding: 8px 16px; }
+#toast { font-size: 15px; padding: 8px 16px; }
+#banner { max-width: 760px; width: 100%; padding: 16px 20px; font-size: clamp(14px, 2vw, 18px); line-height: 1.6; background: rgba(60, 10, 4, .86); border-color: rgba(255,120,80,.4); white-space: pre-line; text-align: center; }
+#dialog { width: min(820px, 100%); padding: 16px 20px; pointer-events: auto; }
+#dspeaker { color: var(--accent); font-weight: 900; margin-bottom: 6px; }
+#dbody { min-height: 3.2em; line-height: 1.6; font-size: 17px; }
+#dhint { color: var(--muted); font-size: 12px; text-align: right; margin-top: 6px; }
+#dchoices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+button { font: inherit; }
+.btn { background: #2a3350; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+.btn:hover { background: #38456d; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent); color: #2a1700; border-color: transparent; }
+.btn.primary:hover { background: #ffc569; }
+
+.overlay { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 20px max(16px, env(safe-area-inset-left, 0px)); text-align: center; }
+#start { background: radial-gradient(ellipse at 50% 120%, #7a2a0c 0%, #1a1020 45%, #070810 100%); }
+#end { background: rgba(40, 4, 2, .9); }
+#end.ok { background: rgba(2, 18, 24, .9); }
+.card { max-width: 520px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.card h1 { margin: 0; font-size: clamp(34px, 7vw, 56px); font-weight: 900; letter-spacing: .02em; text-wrap: balance; }
+.card h1 em { font-style: normal; color: var(--accent); }
+.card p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 15px; text-wrap: balance; }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; text-align: left; font-size: 14px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+.keys span:nth-child(odd) { color: var(--accent); font-weight: 700; }
+#start .btn { font-size: 18px; padding: 12px 34px; }
+#nowebgl { padding: 24px; }
+
+@media (prefers-reduced-motion: reduce) { #waterfill { transition: none; } }
+@media (max-width: 560px) { #hud-top { flex-wrap: wrap; } #hud-left, #hud-right { flex: 1 1 140px; } #hud-mid { order: 3; flex-basis: 100%; } }
+</style>
+
+<div id="stage">
+  <canvas id="c" tabindex="0"></canvas>
+  <div class="layer" id="vignette"></div>
+  <div class="layer" id="tint"></div>
+
+  <div class="layer pad" id="hud-top" hidden>
+    <div id="hud-left">
+      <div class="box chip" id="coins">코인 <b>0</b></div>
+      <div class="box chip" id="inv">소지품: 씨앗 - · 물 -</div>
+      <div class="box" id="watergauge" hidden><div id="waterfill"></div><div id="waterlabel"></div></div>
+    </div>
+    <div id="hud-mid">
+      <div class="box" id="objective" hidden></div>
+      <div id="heat" hidden>
+        <div id="survival"></div>
+        <div id="heatbar"><div id="heatfill"></div></div>
+      </div>
+    </div>
+    <div id="hud-right">
+      <div class="box" id="timer" hidden></div>
+      <div id="sunwarn" hidden>곧 해가 뜬다! 안전한 곳으로!</div>
+    </div>
+  </div>
+
+  <div id="bottom">
+    <div class="box" id="banner" hidden></div>
+    <div class="box" id="toast" hidden></div>
+    <div class="box" id="prompt" hidden></div>
+    <div class="box" id="dialog" hidden>
+      <div id="dspeaker"></div>
+      <div id="dbody"></div>
+      <div id="dchoices"></div>
+      <div id="dhint"></div>
+    </div>
+  </div>
+
+  <div class="layer" id="fade"></div>
+
+  <div class="overlay" id="start">
+    <div class="card">
+      <h1>열사의 행성<br><em>튜토리얼</em></h1>
+      <p>황폐한 외딴 행성. 아침마다 80도의 열기가 쏟아진다.<br>해가 뜨기 전에 임시거처에 닿아야 한다.</p>
+      <div class="keys">
+        <span>WASD</span><span>이동 (차에서는 운전)</span>
+        <span>마우스 드래그 / ← →</span><span>시점 회전</span>
+        <span>E</span><span>상호작용 · 대사 넘기기 · 하차</span>
+        <span>1 2 3</span><span>선택지</span>
+      </div>
+      <button class="btn primary" id="startbtn" disabled>불러오는 중…</button>
+      <p style="font-size:12px">키보드가 필요합니다. 시작 후 게임 화면을 한 번 클릭하면 키 입력이 잡힙니다.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="end" hidden>
+    <div class="card">
+      <h1 id="endtitle"></h1>
+      <p id="endsub"></p>
+      <button class="btn primary" id="restartbtn">다시 시작</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+const T = THREE;
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const FONT = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+
+// ---- 조절 가능한 수치 (Unity 인스펙터 값과 동일) ----
+const CFG = {
+  startCoins: 3, introFade: 3,
+  walkSpeed: 5, carMax: 28, carReverse: 8, carAccel: 14, carCoast: 8, carSteer: 1.4, // rad/s
+  timer: 90, warnAt: 30,
+  deathTime: 15, recover: 0.5, minSpeedMul: 0.3,
+  waterFromTank: 0.12, waterPerUse: 0.1, waterCap: 1,
+  mouthOpenTime: 3,
+};
+
+const OBJECTIVE = {
+  wake: '', shop: '앞에 있는 낡은 가게로 가자', talk: '가게 안의 괴물에게 다가가 말을 걸어보자',
+  seed: '괴물의 입 안에 있는 씨앗을 집자', house: '앞에 있는 집으로 들어가자',
+  water: '집 안의 물통을 살펴보자', plant: '씨앗을 심자', watering: '씨앗에 물을 주자',
+  cover: '새싹에 가림막을 씌우자', car: '낡은 차를 타고 임시거처로 가자',
+  drive: '낡은 차를 타고 임시거처로 가자', done: '',
+};
+const HEAT_WARNING = '이 행성은 아침마다 약 80도의 열기를 내뿜는다.\n해가 뜨기 전에 식물을 가리고 실내나 임시거처로 피해야 한다.';
+
+const NIGHT = { sky: new T.Color(0x070b26), hemi: new T.Color(0x6a76c4), hemiI: 1.0, sun: new T.Color(0x8aa0ff), sunI: 0.35 };
+const DAWN = { sky: new T.Color(0xff6a24), hemi: new T.Color(0xffa878), hemiI: 1.15, sun: new T.Color(0xffa060), sunI: 1.1 };
+
+let renderer, camera, G = null, audio = null;
+const keys = new Set();
+let camYaw = 0, camPitch = 0.38;
+
+// ---------------------------------------------------------------- 오디오
+function beep(freq = 880, len = 0.16) {
+  if (!audio) return;
+  try {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.22, audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + len);
+    o.connect(g); g.connect(audio.destination);
+    o.start(); o.stop(audio.currentTime + len);
+  } catch (e) { /* 오디오 불가 환경 무시 */ }
+}
+
+// ---------------------------------------------------------------- 헬퍼
+const mats = {};
+const mat = (c) => mats[c] || (mats[c] = new T.MeshLambertMaterial({ color: c }));
+
+function makeLabel(text, size) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+  const x = c.getContext('2d');
+  x.font = '900 58px ' + FONT; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.lineWidth = 12; x.strokeStyle = 'rgba(0,0,0,.8)'; x.lineJoin = 'round';
+  x.strokeText(text, 256, 64); x.fillStyle = '#fff'; x.fillText(text, 256, 64);
+  const s = new T.Sprite(new T.SpriteMaterial({ map: new T.CanvasTexture(c), transparent: true, depthWrite: false }));
+  s.scale.set(4 * size, size, 1);
+  return s;
+}
+
+function rng(seed) { let a = seed; return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+// ---------------------------------------------------------------- 게임 생성
+function newGame(runIntro) {
+  const scene = new T.Scene();
+  const hemi = new T.HemisphereLight(0x6a76c4, 0x3a2414, 1); scene.add(hemi);
+  const sun = new T.DirectionalLight(0x8aa0ff, 0.35); sun.position.set(30, 60, -20); scene.add(sun);
+
+  const labels = [], obstacles = [], zones = [], tweens = [];
+
+  const box = (w, h, d, color, x, y, z, parent) => {
+    const m = new T.Mesh(new T.BoxGeometry(w, h, d), typeof color === 'number' ? mat(color) : color);
+    m.position.set(x, y, z); (parent || scene).add(m); return m;
+  };
+  const obstacle = (cx, cz, w, d, h) => obstacles.push({ x0: cx - w / 2, x1: cx + w / 2, z0: cz - d / 2, z1: cz + d / 2, y1: h || 4 });
+  const label = (text, x, y, z, size, maxDist, parent) => { const s = makeLabel(text, size); s.position.set(x, y, z); (parent || scene).add(s); labels.push({ s, base: size, maxDist: maxDist || 60 }); return s; };
+
+  // 지면 + 먼지 조각(속도감용)
+  const ground = new T.Mesh(new T.PlaneGeometry(800, 1400), mat(0x8c5230));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(0, 0, 300); scene.add(ground);
+  const rnd = rng(5);
+  const rockCols = [0x7a4626, 0x9a6038, 0x6a3c20, 0xa5703f];
+  for (let i = 0; i < 260; i++) {
+    const x = (rnd() - 0.5) * 300 + 20, z = rnd() * 640 - 20;
+    if (x > -14 && x < 48 && z > -10 && z < 24) continue;
+    if (Math.abs(x - 30) < 14 && Math.abs(z - 600) < 14) continue;
+    const w = 0.6 + rnd() * 2.2, h = 0.12 + rnd() * 0.35;
+    const m = box(w, h, w * (0.6 + rnd() * 0.8), rockCols[i % 4], x, h / 2, z);
+    m.rotation.y = rnd() * 3;
+  }
+
+  // 건물: 속이 빈 상자 + 열린 문짝 (문은 -Z 쪽)
+  function building(name, cx, cz, w, h, d, doorW, doorH, wallC, roofC) {
+    const t = 0.3, sideW = (w - doorW) / 2, g = new T.Group(); g.position.set(cx, 0, cz); scene.add(g);
+    box(w, h, t, wallC, 0, h / 2, d / 2 - t / 2, g); obstacle(cx, cz + d / 2 - t / 2, w, t);
+    box(t, h, d, wallC, -w / 2 + t / 2, h / 2, 0, g); obstacle(cx - w / 2 + t / 2, cz, t, d);
+    box(t, h, d, wallC, w / 2 - t / 2, h / 2, 0, g); obstacle(cx + w / 2 - t / 2, cz, t, d);
+    box(sideW, h, t, wallC, -(doorW / 2 + sideW / 2), h / 2, -d / 2 + t / 2, g); obstacle(cx - (doorW / 2 + sideW / 2), cz - d / 2 + t / 2, sideW, t);
+    box(sideW, h, t, wallC, doorW / 2 + sideW / 2, h / 2, -d / 2 + t / 2, g); obstacle(cx + (doorW / 2 + sideW / 2), cz - d / 2 + t / 2, sideW, t);
+    box(doorW, h - doorH, t, wallC, 0, (h + doorH) / 2, -d / 2 + t / 2, g);
+    box(w + 0.4, 0.3, d + 0.4, roofC, 0, h + 0.15, 0, g);
+    box(0.12, doorH, doorW, 0x1e1a1a, -doorW / 2 - 0.1, doorH / 2, -d / 2 - doorW / 2, g);
+    label(name, cx, h + 2.2, cz, 1.5, 120);
+    return g;
+  }
+
+  // 가게 (0,14), 집 (18,14)
+  building('낡은 가게', 0, 14, 9, 3.5, 8, 2.4, 2.6, 0x84848a, 0x5c5c62);
+  zones.push({ id: 'shop', x: 0, z: 14, hx: 4, hz: 3.5, safe: true });
+  building('집', 18, 14, 8, 3.5, 7, 2.2, 2.6, 0xdcc79a, 0xb39b72);
+  zones.push({ id: 'house', x: 18, z: 14, hx: 3.6, hz: 3.1, safe: true });
+
+  // 괴물 (가게 안, 입이 -Z = 문 쪽)
+  const monster = new T.Group(); monster.position.set(0, 0, 15.8); monster.rotation.y = Math.PI; scene.add(monster);
+  const body = new T.Mesh(new T.SphereGeometry(1.6, 24, 18), mat(0x66208c)); body.position.y = 1.7; monster.add(body);
+  obstacle(0, 15.8, 3, 3, 3.4);
+  const jawMat = mat(0x8033a8);
+  const upperJaw = new T.Group(); upperJaw.position.set(0, 1.45, 1.2); monster.add(upperJaw);
+  const lowerJaw = new T.Group(); lowerJaw.position.set(0, 1.35, 1.2); monster.add(lowerJaw);
+  const jawGeo = new T.SphereGeometry(0.5, 16, 12);
+  // 반지름 0.5 구를 (2.0, 0.55, 1.6)배 → 납작한 타원체 턱
+  const uj = new T.Mesh(jawGeo, jawMat); uj.scale.set(2.0, 0.55, 1.6); uj.position.set(0, 0.15, 0.7); upperJaw.add(uj);
+  const lj = new T.Mesh(jawGeo, jawMat); lj.scale.set(2.0, 0.55, 1.6); lj.position.set(0, -0.15, 0.7); lowerJaw.add(lj);
+  const tr = rng(11);
+  for (const upper of [true, false]) {
+    for (let i = 0; i < 8; i++) {
+      const x = lerp(-0.85, 0.85, (i + tr() * 0.6) / 8), z = 0.7 + 0.8 * Math.sqrt(Math.max(0, 1 - x * x));
+      const hgt = 0.18 + tr() * 0.22, wd = 0.09 + tr() * 0.1;
+      const y = upper ? -0.12 - hgt / 2 : 0.12 + hgt / 2;
+      const tooth = box(wd, hgt, wd, tr() > 0.5 ? 0xf2f2e6 : 0xe0c74c, x, y, z - 0.12, upper ? upperJaw : lowerJaw);
+      tooth.rotation.set((tr() - 0.5) * 0.5, tr() * 1.5, (tr() - 0.5) * 0.5);
+    }
+  }
+  label('괴물', 0, 4.6, 15.8, 1.2);
+  const seedMesh = new T.Mesh(new T.SphereGeometry(0.15, 12, 10), mat(0x33cc40)); seedMesh.position.set(0, 1.4, 13.9); seedMesh.visible = false; scene.add(seedMesh);
+  const seedLabel = label('씨앗', 0, 2.0, 13.9, 0.7); seedLabel.visible = false;
+
+  // 물통 (집 안)
+  const tankPos = new T.Vector3(15.5, 0, 15.5);
+  const tank = new T.Mesh(new T.CylinderGeometry(0.45, 0.45, 1.2, 18), mat(0x73c7ff)); tank.position.set(15.5, 0.6, 15.5); scene.add(tank);
+  obstacle(15.5, 15.5, 0.9, 0.9, 1.2);
+  label('물통', 15.5, 2.0, 15.5, 0.9);
+
+  // 밭 (18,4)
+  const plotPos = new T.Vector3(18, 0, 4);
+  box(4, 0.2, 3, 0x3d2314, 18, 0.1, 4);
+  const seedVis = new T.Mesh(new T.SphereGeometry(0.15, 12, 10), mat(0x33cc40)); seedVis.position.set(18, 0.3, 4); seedVis.visible = false; scene.add(seedVis);
+  const sprout = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 0.6, 8), mat(0x9af25a)); sprout.position.set(18, 0.5, 4); sprout.visible = false; scene.add(sprout);
+  const cover = new T.Mesh(new T.BoxGeometry(4.4, 0.1, 3.4), new T.MeshBasicMaterial({ color: 0x9a9aa2, transparent: true, opacity: 0.55 })); cover.position.set(18, 1.2, 4); cover.visible = false; scene.add(cover);
+  label('밭', 18, 2.4, 4, 0.9);
+
+  // 물 파티클 풀
+  const dropGeo = new T.SphereGeometry(0.07, 6, 5), dropMat = new T.MeshBasicMaterial({ color: 0x5cc8ff });
+  const drops = []; for (let i = 0; i < 60; i++) { const m = new T.Mesh(dropGeo, dropMat); m.visible = false; scene.add(m); drops.push({ m, life: 0, vy: 0 }); }
+
+  // 낡은 차 (27,6) +Z 방향
+  const car = new T.Group(); car.position.set(27, 0, 6); scene.add(car);
+  box(2.2, 0.9, 4.4, 0xb35420, 0, 0.9, 0, car);
+  box(1.8, 0.7, 2.0, 0x8c421a, 0, 1.6, -0.3, car);
+  for (const x of [-1.15, 1.15]) for (const z of [-1.4, 1.4]) {
+    const w = new T.Mesh(new T.CylinderGeometry(0.4, 0.4, 0.3, 14), mat(0x0d0d0d)); w.rotation.z = Math.PI / 2; w.position.set(x, 0.4, z); car.add(w);
+  }
+  const carObs = { x0: 0, x1: 0, z0: 0, z1: 0, y1: 2.2 }; obstacles.push(carObs);
+  label('낡은 차', 0, 3.4, 0, 1.0, 60, car);
+
+  // 임시거처 (30,600)
+  for (const x of [-6, 6]) for (const z of [-6, 6]) box(0.4, 4, 0.4, 0x66503a, 30 + x, 2, 600 + z);
+  box(14, 0.3, 14, 0x8090a2, 30, 4.15, 600);
+  label('임시거처', 30, 8, 600, 6, 2000);
+  zones.push({ id: 'shelter', x: 30, z: 600, hx: 6, hz: 6, safe: true });
+
+  // 주인공 (파란 캡슐)
+  const player = new T.Group(); scene.add(player);
+  const pBody = new T.Group(); player.add(pBody);
+  const blue = mat(0x2659f2);
+  const cyl = new T.Mesh(new T.CylinderGeometry(0.45, 0.45, 1.0, 16), blue); cyl.position.y = 1.0; pBody.add(cyl);
+  const capA = new T.Mesh(new T.SphereGeometry(0.45, 16, 12), blue); capA.position.y = 1.5; pBody.add(capA);
+  const capB = new T.Mesh(new T.SphereGeometry(0.45, 16, 12), blue); capB.position.y = 0.5; pBody.add(capB);
+  box(0.5, 0.18, 0.2, 0xe6f0ff, 0, 1.55, 0.4, pBody);
+  label('주인공', 0, 2.8, 0, 0.8, 60, player);
+  const P = { x: 0, z: 0, yaw: 0, walkT: 0 };
+
+  // 목표 마커
+  const marker = new T.Group(); scene.add(marker);
+  const mm = new T.MeshBasicMaterial({ color: 0xffe21a, depthTest: false });
+  const cone = new T.Mesh(new T.ConeGeometry(0.45, 0.8, 4), mm); cone.rotation.x = Math.PI; cone.position.y = 0.4; cone.renderOrder = 99; marker.add(cone);
+  const shaft = new T.Mesh(new T.CylinderGeometry(0.12, 0.12, 0.7, 8), mm); shaft.position.y = 1.15; shaft.renderOrder = 99; marker.add(shaft);
+  marker.visible = false;
+
+  // ------------------------------------------------ 상태
+  const g = {
+    scene, state: runIntro ? 'intro' : 'ready', step: 'wake', coins: CFG.startCoins, hasSeed: false, water: 0, waterShown: false,
+    heat: 0, timer: { running: false, expired: false, remain: CFG.timer }, lastBeep: 99999,
+    drive: false, car: { speed: 0, h: 0 }, monster: 'idle', mouth: 0, plot: 'empty', busy: false, tankTaken: false,
+    dlg: null, inZone: {}, emitting: false, markerTarget: null, tweens, boardedAt: -1,
+    P, labels, zones, obstacles, carObs, hemi, sun, carMesh: car,
+  };
+
+  const targets = {
+    shop: () => new T.Vector3(0, 0, 9.2), talk: () => new T.Vector3(0, 0, 15.8), seed: () => seedMesh.position,
+    house: () => new T.Vector3(18, 0, 9.8), water: () => tankPos, plant: () => plotPos, watering: () => plotPos, cover: () => plotPos,
+    car: () => car.position, drive: () => new T.Vector3(30, 0, 600),
+  };
+  function setStep(s) {
+    g.step = s;
+    const t = OBJECTIVE[s];
+    const o = $('objective'); o.textContent = t; o.hidden = !t;
+    g.markerTarget = targets[s] ? targets[s]() : null;
+    marker.visible = !!g.markerTarget;
+  }
+  g.setStep = setStep;
+
+  const tween = (d, fn, done) => tweens.push({ t: 0, d, fn, done });
+
+  // ------------------------------------------------ 상호작용
+  const ints = [
+    { pos: new T.Vector3(0, 0, 15.8), range: 3.8, can: () => g.monster === 'idle' && g.step === 'talk', prompt: 'E: 상호작용 (괴물)', act: talkMonster },
+    { pos: seedMesh.position, range: 3, can: () => g.step === 'seed' && seedMesh.visible, prompt: 'E: 상호작용 (씨앗 줍기)', act: () => { g.hasSeed = true; seedMesh.visible = false; seedLabel.visible = false; toast('씨앗을 얻었다'); setStep('house'); } },
+    { pos: tankPos, range: 3, can: () => g.step === 'water' && !g.tankTaken, prompt: 'E: 상호작용 (물통)', act: () => { g.tankTaken = true; g.water = Math.min(CFG.waterCap, CFG.waterFromTank); toast('물을 얻었다... 얼마 남지 않았다'); setStep('plant'); } },
+    { pos: plotPos, range: 3.6, can: plotCan, prompt: null, act: plotAct },
+    { pos: car.position, range: 3.6, can: () => !g.drive && (g.step === 'car' || g.step === 'drive'), prompt: 'E: 상호작용 (차 타기)', act: board },
+  ];
+  function plotCan() {
+    if (g.busy) return false;
+    if (g.plot === 'empty') return g.step === 'plant' && g.hasSeed;
+    if (g.plot === 'seeded') return g.step === 'watering' && g.water >= CFG.waterPerUse - 1e-4;
+    if (g.plot === 'sprouted') return g.step === 'cover';
+    return false;
+  }
+  ints[3].promptFn = () => ({ empty: 'E: 상호작용 (씨앗 심기)', seeded: 'E: 상호작용 (물 주기)', sprouted: 'E: 상호작용 (가림막 씌우기)' }[g.plot]);
+
+  function talkMonster() {
+    if (g.coins < 3) { dialog('괴물', ['그르르르... (괴물이 빈 손을 보더니 콧김을 내뿜는다)', '...가진 게 없군. 꺼져.']); return; }
+    dialog('괴물', ['그르르르르... (괴물이 으르렁거리며 커다란 손을 내민다)', '...내놔. 그러면 네가 찾는 걸 주지.'], ['3코인을 준다', '물러난다'], (i) => {
+      if (i === 0 && g.coins >= 3) { g.coins -= 3; openMouth(); }
+    });
+  }
+  function openMouth() {
+    g.monster = 'opening'; toast('괴물이 코인을 삼키고, 천천히 입을 벌린다...');
+    tween(CFG.mouthOpenTime, (k) => { const e = k * k * (3 - 2 * k); upperJaw.rotation.x = -0.61 * e; lowerJaw.rotation.x = 0.52 * e; }, () => {
+      g.monster = 'open'; seedMesh.visible = true; seedLabel.visible = true; setStep('seed');
+    });
+  }
+  function plotAct() {
+    if (g.plot === 'empty') {
+      g.hasSeed = false; seedVis.visible = true; g.plot = 'seeded'; toast('씨앗을 심었다'); setStep('watering');
+    } else if (g.plot === 'seeded') {
+      g.busy = true; g.water = Math.max(0, g.water - CFG.waterPerUse); g.emitting = true;
+      tween(1.5, () => {}, () => {
+        g.emitting = false; seedVis.visible = false; sprout.visible = true;
+        tween(1.5, (k) => sprout.scale.setScalar(lerp(0.05, 1, k * k * (3 - 2 * k))), () => {
+          g.plot = 'sprouted'; g.busy = false; banner(HEAT_WARNING, 9); setStep('cover');
+        });
+      });
+    } else if (g.plot === 'sprouted') {
+      g.busy = true; cover.visible = true;
+      tween(1.2, (k) => { cover.position.y = lerp(6.2, 1.2, k * k); }, () => {
+        g.plot = 'covered'; g.busy = false; g.timer.running = true; g.timer.remain = CFG.timer;
+        toast('해 뜨기까지 시간이 얼마 없다! 서두르자'); setStep('car');
+      });
+    }
+  }
+  function board() {
+    g.drive = true; g.car.speed = 0; g.boardedAt = performance.now();
+    if (g.step === 'car') setStep('drive');
+  }
+  function exitCar() {
+    g.drive = false; g.car.speed = 0;
+    const h = g.car.h; // 차의 왼쪽(+x 방향 기준 회전)으로 하차
+    P.x = car.position.x + Math.cos(h) * 2.8; P.z = car.position.z - Math.sin(h) * 2.8; P.yaw = h;
+    if (g.step === 'drive') setStep('car');
+  }
+  g.exitCar = exitCar;
+
+  // ------------------------------------------------ UI 보조
+  let toastT = 0, bannerT = 0;
+  function toast(t) { const e = $('toast'); e.textContent = t; e.hidden = false; toastT = 2.6; }
+  function banner(t, s) { const e = $('banner'); e.textContent = t; e.hidden = false; bannerT = s; }
+  g.tickUI = (dt) => {
+    if (toastT > 0 && (toastT -= dt) <= 0) $('toast').hidden = true;
+    if (bannerT > 0 && (bannerT -= dt) <= 0) $('banner').hidden = true;
+  };
+
+  function dialog(speaker, lines, choices, cb) {
+    if (g.dlg) return;
+    g.dlg = { lines, choices: choices || null, cb, idx: 0, choosing: false };
+    $('dspeaker').textContent = speaker; $('dialog').hidden = false; $('prompt').hidden = true;
+    renderDialog();
+  }
+  function renderDialog() {
+    const d = g.dlg, ch = $('dchoices'); ch.textContent = '';
+    if (d.choosing) {
+      $('dhint').textContent = '숫자키 또는 클릭으로 선택';
+      d.choices.forEach((c, i) => {
+        const b = document.createElement('button'); b.className = 'btn'; b.textContent = `[${i + 1}] ${c}`;
+        b.addEventListener('click', () => pick(i)); ch.appendChild(b);
+      });
+    } else { $('dbody').textContent = d.lines[d.idx]; $('dhint').textContent = 'E: 계속'; }
+  }
+  function pick(i) { closeDialog(i); }
+  function closeDialog(choice) {
+    const cb = g.dlg.cb; g.dlg = null; $('dialog').hidden = true;
+    if (cb) cb(choice);
+    canvas.focus();
+  }
+  g.dialogKey = (code) => {
+    const d = g.dlg; if (!d) return;
+    if (d.choosing) {
+      const i = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 }[code];
+      if (i !== undefined && i < d.choices.length) pick(i);
+    } else if (code === 'KeyE' || code === 'Enter' || code === 'Space') {
+      d.idx++;
+      if (d.idx < d.lines.length) renderDialog();
+      else if (d.choices) { d.choosing = true; renderDialog(); }
+      else closeDialog(-1);
+    }
+  };
+  g.interact = () => { if (g.focus) g.focus.act(); };
+
+  // ------------------------------------------------ 이동 / 충돌
+  function resolve(p, r) {
+    for (let pass = 0; pass < 2; pass++) for (const o of obstacles) {
+      const cx = clamp(p.x, o.x0, o.x1), cz = clamp(p.z, o.z0, o.z1);
+      const dx = p.x - cx, dz = p.z - cz, d2 = dx * dx + dz * dz;
+      if (d2 >= r * r) continue;
+      if (d2 > 1e-8) { const d = Math.sqrt(d2), push = r - d; p.x += dx / d * push; p.z += dz / d * push; }
+      else {
+        const l = p.x - o.x0, rr = o.x1 - p.x, t = p.z - o.z0, b = o.z1 - p.z, m = Math.min(l, rr, t, b);
+        if (m === l) p.x = o.x0 - r; else if (m === rr) p.x = o.x1 + r; else if (m === t) p.z = o.z0 - r; else p.z = o.z1 + r;
+      }
+    }
+    p.x = clamp(p.x, -395, 395); p.z = clamp(p.z, -395, 995);
+  }
+  const speedMul = () => lerp(1, CFG.minSpeedMul, g.heat);
+  const curPos = () => (g.drive ? { x: car.position.x, z: car.position.z } : P);
+  const inside = (z, p) => Math.abs(p.x - z.x) < z.hx && Math.abs(p.z - z.z) < z.hz;
+  const isSafe = (p) => zones.some((z) => z.safe && inside(z, p));
+
+  function walk(dt) {
+    const h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
+    let moving = 0;
+    if ((h || v) && !g.dlg) {
+      const fx = Math.sin(camYaw), fz = Math.cos(camYaw);
+      let dx = fx * v - fz * h, dz = fz * v + fx * h; const l = Math.hypot(dx, dz); dx /= l; dz /= l;
+      const sp = CFG.walkSpeed * speedMul();
+      P.x += dx * sp * dt; P.z += dz * sp * dt; moving = speedMul();
+      const want = Math.atan2(dx, dz); const diff = ((want - P.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+      P.yaw += diff * Math.min(1, 14 * dt);
+    }
+    resolve(P, 0.45);
+    P.walkT += dt * 10 * moving; pBody.position.y = Math.abs(Math.sin(P.walkT)) * 0.06 * moving;
+    player.position.set(P.x, 0, P.z); player.rotation.y = P.yaw;
+  }
+
+  function driveCar(dt, active) {
+    const c = g.car;
+    const v = active ? (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0) : 0;
+    const h = active ? (keys.has('KeyA') ? 1 : 0) - (keys.has('KeyD') ? 1 : 0) : 0;
+    const mul = speedMul();
+    const target = v > 0 ? CFG.carMax * mul : v < 0 ? -CFG.carReverse * mul : 0;
+    const rate = v !== 0 ? CFG.carAccel : CFG.carCoast * (active ? 1 : 3);
+    c.speed += clamp(target - c.speed, -rate * dt, rate * dt);
+    c.h += h * CFG.carSteer * clamp(Math.abs(c.speed) / 4, 0, 1) * Math.sign(c.speed || 1) * dt;
+    const cp = { x: car.position.x + Math.sin(c.h) * c.speed * dt, z: car.position.z + Math.cos(c.h) * c.speed * dt };
+    carObs.x0 = carObs.x1 = carObs.z0 = carObs.z1 = -99999; // 자기 자신과 충돌 방지
+    resolve(cp, 1.5);
+    car.position.x = cp.x; car.position.z = cp.z; car.rotation.y = c.h;
+  }
+
+  // ------------------------------------------------ 매 프레임
+  g.update = (dt, now) => {
+    // 트윈
+    const list = tweens.splice(0, tweens.length);
+    for (const tw of list) { tw.t += dt; const k = clamp(tw.t / tw.d, 0, 1); tw.fn(k); if (k < 1) tweens.push(tw); else if (tw.done) tw.done(); }
+
+    const playing = g.state === 'play';
+
+    // 타이머 + 하늘
+    const tm = g.timer;
+    if (playing && tm.running) {
+      tm.remain -= dt;
+      if (tm.remain <= CFG.warnAt && tm.remain > 0) { const s = Math.ceil(tm.remain); if (s !== g.lastBeep) { g.lastBeep = s; beep(); } }
+      if (tm.remain <= 0) { tm.remain = 0; tm.running = false; tm.expired = true; beep(440, 0.7); }
+    }
+    const p01 = tm.running || tm.expired ? clamp(1 - tm.remain / CFG.timer, 0, 1) : 0;
+    scene.background = scene.background || new T.Color();
+    scene.background.copy(NIGHT.sky).lerp(DAWN.sky, p01);
+    hemi.color.copy(NIGHT.hemi).lerp(DAWN.hemi, p01); hemi.intensity = lerp(NIGHT.hemiI, DAWN.hemiI, p01);
+    sun.color.copy(NIGHT.sun).lerp(DAWN.sun, p01); sun.intensity = lerp(NIGHT.sunI, DAWN.sunI, p01);
+
+    // 이동
+    if (playing || g.state === 'over' || g.state === 'success') {
+      if (g.drive) driveCar(dt, playing && !g.dlg); else { carObs.x0 = car.position.x - 1.4; carObs.x1 = car.position.x + 1.4; carObs.z0 = car.position.z - 2.3; carObs.z1 = car.position.z + 2.3; if (playing) walk(dt); }
+    }
+    if (g.state === 'intro') { player.position.set(P.x, 0, P.z); }
+
+    const pos = curPos();
+    if (playing) {
+      // 열기
+      const exposed = tm.expired && !isSafe(pos);
+      if (exposed) { g.heat += dt / CFG.deathTime; if (g.heat >= 1) { g.heat = 1; die(); } }
+      else g.heat = Math.max(0, g.heat - CFG.recover * dt);
+
+      // 구역 진입
+      for (const z of zones) {
+        const now_in = inside(z, pos);
+        if (now_in && !g.inZone[z.id]) onEnter(z.id);
+        g.inZone[z.id] = now_in;
+      }
+
+      // 포커스
+      let best = null, bd = 1e9;
+      if (!g.dlg && !g.drive) for (const it of ints) {
+        if (!it.can()) continue;
+        const d = Math.hypot(it.pos.x - P.x, it.pos.z - P.z);
+        if (d <= it.range && d < bd) { best = it; bd = d; }
+      }
+      g.focus = best;
+      const pe = $('prompt');
+      if (best) { pe.textContent = best.promptFn ? best.promptFn() : best.prompt; pe.hidden = false; }
+      else if (g.drive && !g.dlg) { pe.textContent = 'WASD: 운전  |  E: 하차'; pe.hidden = false; }
+      else pe.hidden = true;
+    }
+
+    // 물 파티클
+    if (g.emitting) for (let n = 0; n < 2; n++) { const d = drops.find((q) => q.life <= 0); if (!d) break; d.life = 0.7; d.vy = -2; d.m.visible = true; d.m.position.set(18 + (Math.random() - 0.5) * 1.6, 1.9, 4 + (Math.random() - 0.5) * 1.4); }
+    for (const d of drops) if (d.life > 0) { d.life -= dt; d.vy -= 9 * dt; d.m.position.y += d.vy * dt; if (d.life <= 0 || d.m.position.y < 0.25) { d.life = 0; d.m.visible = false; } }
+
+    // 밭/괴물 보조: 마커
+    if (g.markerTarget && marker.visible) {
+      const t = g.markerTarget, dist = Math.hypot(camera.position.x - t.x, camera.position.z - t.z);
+      const s = clamp(1 + dist * 0.015, 1, 14);
+      marker.scale.setScalar(s);
+      marker.position.set(t.x, t.y + (4.2 + Math.sin(now * 3) * 0.4) * s, t.z);
+      marker.rotation.y += 1.6 * dt;
+    }
+
+    // 라벨 거리 컬링
+    for (const L of labels) { L.s.getWorldPosition(_v); L.s.userData.d = Math.hypot(camera.position.x - _v.x, camera.position.z - _v.z); }
+    for (const L of labels) {
+      L.s.material.opacity = L.s.userData.d > L.maxDist ? 0 : 1;
+      const k = L.maxDist > 500 ? 1 : clamp(L.s.userData.d / 14, 0.3, 1); // 가까울수록 작게
+      L.s.scale.set(4 * L.base * k, L.base * k, 1);
+    }
+
+    // 카메라
+    const camKey = (keys.has('ArrowLeft') ? 1 : 0) - (keys.has('ArrowRight') ? 1 : 0);
+    camYaw += camKey * 1.8 * dt;
+    const f = new T.Vector3(Math.sin(camYaw), 0, Math.cos(camYaw));
+    const focus = new T.Vector3(pos.x, 1.6, pos.z);
+    const dist = 7, cp = Math.cos(camPitch), sp = Math.sin(camPitch);
+    const cpos = new T.Vector3(focus.x - f.x * cp * dist, focus.y + sp * dist, focus.z - f.z * cp * dist);
+    cpos.y = Math.max(0.5, cpos.y);
+    // 벽/건물에 가려지지 않도록 카메라를 당겨온다 (선분 vs AABB)
+    let tHit = 1; const dx = cpos.x - focus.x, dy = cpos.y - focus.y, dz = cpos.z - focus.z;
+    for (const o of obstacles) {
+      let t0 = 0, t1 = 1;
+      const slab = (p, d, lo, hi) => { if (Math.abs(d) < 1e-9) return p >= lo && p <= hi; let a = (lo - p) / d, b = (hi - p) / d; if (a > b) { const t = a; a = b; b = t; } t0 = Math.max(t0, a); t1 = Math.min(t1, b); return t0 <= t1; };
+      if (slab(focus.x, dx, o.x0 - 0.25, o.x1 + 0.25) && slab(focus.y, dy, -1, o.y1 + 0.25) && slab(focus.z, dz, o.z0 - 0.25, o.z1 + 0.25) && t0 > 0.001 && t0 < tHit) tHit = t0;
+    }
+    if (tHit < 1) { const k = Math.max(0.22, tHit * 0.96); cpos.set(focus.x + dx * k, focus.y + dy * k, focus.z + dz * k); }
+    player.visible = !g.drive && cpos.distanceTo(focus) > 1.9; // 벽에 바짝 붙은 카메라가 캐릭터 속으로 파고들면 숨김
+    let fov = 70, roll = 0;
+    if (g.heat > 0.001) {
+      cpos.x += (Math.random() - 0.5) * 0.5 * g.heat; cpos.y += (Math.random() - 0.5) * 0.5 * g.heat; cpos.z += (Math.random() - 0.5) * 0.5 * g.heat;
+      fov += Math.sin(now * 4) * 6 * g.heat; roll = Math.sin(now * 6) * 0.07 * g.heat;
+    }
+    camera.position.copy(cpos); camera.up.set(Math.sin(roll), Math.cos(roll), 0); camera.lookAt(focus);
+    if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+
+    g.tickUI(dt);
+    updateHUD(g, now);
+  };
+  const _v = new T.Vector3();
+
+  function onEnter(id) {
+    if (id === 'shop' && g.step === 'shop') setStep('talk');
+    else if (id === 'house' && g.step === 'house') setStep('water');
+    else if (id === 'shelter' && (g.step === 'car' || g.step === 'drive')) success();
+  }
+  function die() {
+    if (g.state !== 'play') return;
+    g.state = 'over'; $('prompt').hidden = true;
+    const f = $('fade'); f.style.background = '#fff4ec'; f.style.transition = 'opacity 1.5s'; f.style.opacity = '1';
+    setTimeout(() => showEnd(false), 1600);
+  }
+  function success() {
+    if (g.state !== 'play') return;
+    g.state = 'success'; setStep('done'); $('prompt').hidden = true;
+    showEnd(true);
+  }
+
+  // ------------------------------------------------ 시작
+  P.x = 0; P.z = 0; P.yaw = 0; camYaw = 0; camPitch = 0.38;
+  player.position.set(0, 0, 0);
+  const wipe = $('fade'); wipe.style.transition = 'none'; wipe.style.background = '#000'; wipe.style.opacity = '1';
+  $('end').hidden = true; $('hud-top').hidden = !runIntro;
+  ['banner', 'toast', 'prompt', 'dialog', 'timer', 'sunwarn', 'heat', 'watergauge'].forEach((i) => { $(i).hidden = true; });
+  $('objective').hidden = true; $('vignette').style.opacity = 0; $('tint').style.opacity = 0;
+  if (runIntro) {
+    void wipe.offsetWidth; wipe.style.transition = `opacity ${CFG.introFade}s ease-out`; wipe.style.opacity = '0';
+    setTimeout(() => { if (G === g) { g.state = 'play'; setStep('shop'); canvas.focus(); } }, CFG.introFade * 1000);
+  }
+  return g;
+}
+
+// ---------------------------------------------------------------- HUD
+function updateHUD(g, now) {
+  $('coins').innerHTML = `코인 <b>${g.coins}</b>`;
+  if (g.water > 0) g.waterShown = true;
+  $('inv').textContent = `소지품: 씨앗 ${g.hasSeed ? 1 : '-'} · 물 ${g.waterShown ? g.water.toFixed(2) + 'L' : '-'}`;
+  $('watergauge').hidden = !g.waterShown;
+  $('waterfill').style.width = (clamp(g.water / CFG.waterCap, 0, 1) * 100) + '%';
+  $('waterlabel').textContent = `${g.water.toFixed(2)} / ${CFG.waterCap.toFixed(2)} L`;
+
+  const tm = g.timer, tEl = $('timer'), wEl = $('sunwarn');
+  if (tm.running || tm.expired) {
+    tEl.hidden = false;
+    if (tm.expired) { tEl.textContent = '해가 떴다!'; tEl.style.color = 'var(--danger)'; wEl.hidden = true; }
+    else {
+      const s = Math.ceil(tm.remain); tEl.textContent = `해 뜨기까지 ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      const warn = tm.remain <= CFG.warnAt, blink = warn ? Math.sin(now * 4 * Math.PI) * 0.5 + 0.5 : 0;
+      tEl.style.color = warn ? `rgb(255, ${Math.round(255 - blink * 200)}, ${Math.round(255 - blink * 210)})` : '';
+      wEl.hidden = !warn; wEl.style.opacity = String(0.35 + 0.65 * blink);
+    }
+  } else { tEl.hidden = true; wEl.hidden = true; }
+
+  const h = g.heat;
+  $('heat').hidden = h <= 0.001;
+  if (h > 0.001) { $('survival').textContent = `열기! 생존 시간 ${((1 - h) * CFG.deathTime).toFixed(1)}초`; $('heatfill').style.width = (h * 100) + '%'; }
+  $('vignette').style.opacity = String(h * 0.95 * (0.85 + 0.15 * Math.sin(now * 8)));
+  $('tint').style.opacity = String(h * 0.5);
+}
+
+function showEnd(ok) {
+  const e = $('end'); e.hidden = false; e.classList.toggle('ok', ok);
+  $('endtitle').textContent = ok ? '임시거처에 도착했다' : '열기에 쓰러졌다';
+  $('endsub').textContent = ok ? '튜토리얼 종료' : '해가 뜨기 전에 안전한 곳으로 피해야 했다...';
+  $('restartbtn').textContent = ok ? '처음부터 다시' : '다시 시작';
+  $('restartbtn').focus();
+}
+
+// ---------------------------------------------------------------- 부팅
+const canvas = $('c');
+function boot() {
+  try {
+    renderer = new T.WebGLRenderer({ canvas, antialias: true });
+  } catch (e) {
+    $('start').querySelector('.card').innerHTML = '<h1>실행할 수 없음</h1><p id="nowebgl">이 환경에서는 WebGL을 사용할 수 없습니다.</p>';
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  camera = new T.PerspectiveCamera(70, 1, 0.1, 2000);
+  const resize = () => { const s = $('stage'); renderer.setSize(s.clientWidth, s.clientHeight, false); camera.aspect = s.clientWidth / Math.max(1, s.clientHeight); camera.updateProjectionMatrix(); };
+  window.addEventListener('resize', resize); resize();
+  if (window.ResizeObserver) new ResizeObserver(resize).observe($('stage'));
+
+  // 시점 드래그
+  let dragging = false;
+  canvas.addEventListener('pointerdown', (e) => { dragging = true; canvas.classList.add('drag'); canvas.focus(); try { canvas.setPointerCapture(e.pointerId); } catch (_) {} });
+  const up = () => { dragging = false; canvas.classList.remove('drag'); };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('pointermove', (e) => { if (!dragging) return; camYaw -= e.movementX * 0.006; camPitch = clamp(camPitch + e.movementY * 0.005, -0.15, 1.1); });
+
+  window.addEventListener('keydown', (e) => {
+    if (!G) return;
+    if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
+    keys.add(e.code);
+    if (e.repeat) return;
+    if (G.dlg) { G.dialogKey(e.code); return; }
+    if (G.state !== 'play' || e.code !== 'KeyE') return;
+    if (G.drive) { if (performance.now() - G.boardedAt > 200) G.exitCar(); }
+    else G.interact();
+  });
+  window.addEventListener('keyup', (e) => keys.delete(e.code));
+  window.addEventListener('blur', () => keys.clear());
+
+  $('startbtn').addEventListener('click', () => {
+    try { audio = new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (_) { audio = null; }
+    $('start').hidden = true; G = newGame(true); canvas.focus();
+  });
+  $('restartbtn').addEventListener('click', () => { G = newGame(true); canvas.focus(); });
+
+  G = newGame(false); // 시작 화면 뒤에서 한 번 만들어 둠
+  $('startbtn').disabled = false; $('startbtn').textContent = '게임 시작';
+
+  let last = performance.now();
+  const loop = (t) => {
+    const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    G.update(dt, t / 1000);
+    renderer.render(G.scene, camera);
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+  window.__piku = () => G; // 디버그용 읽기 훅
+}
+
+// 라벨 캔버스가 한글 폰트로 그려지도록 폰트 로드를 잠깐 기다린 뒤 시작
+const wait = (document.fonts && document.fonts.load) ? Promise.race([document.fonts.load('900 58px "Noto Sans KR"', '열사의 행성'), new Promise((r) => setTimeout(r, 2500))]) : Promise.resolve();
+wait.catch(() => {}).then(boot);
+})();
+</script>
