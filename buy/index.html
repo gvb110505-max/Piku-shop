@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="color-scheme" content="light only">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PIKU 카드 매입</title>
+<title>PIKU 카드</title>
 <style>
 :root{
   --black:#0d0d0d;--white:#fff;--off:#f6f6f6;
@@ -20,6 +20,7 @@ body{
 }
 a{color:inherit}
 button{font:inherit;cursor:pointer}
+[hidden]{display:none !important}
 
 .strip{background:var(--black);color:var(--white);text-align:center;font-size:11px;letter-spacing:2px;padding:9px 12px}
 
@@ -31,9 +32,13 @@ nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-f
 .navlinks a{text-decoration:none;font-size:12px;letter-spacing:1px;color:var(--gray3)}
 .navlinks a:hover{color:var(--black)}
 
-header.top{max-width:1100px;margin:0 auto;padding:64px 16px 48px;border-bottom:1px solid var(--gray1)}
-header.top h1{font-size:clamp(40px,9vw,84px);font-weight:800;letter-spacing:4px;line-height:1}
-header.top p{margin-top:20px;max-width:560px;font-size:14px;line-height:1.85;color:var(--gray3)}
+header.top{max-width:1100px;margin:0 auto;padding:56px 16px 44px;border-bottom:1px solid var(--gray1)}
+.mode{display:flex;gap:28px;align-items:baseline}
+.mode button{background:none;border:none;padding:0;font-size:clamp(40px,9vw,84px);font-weight:800;letter-spacing:4px;line-height:1;color:#cfcfcf;transition:color .15s}
+.mode button.on{color:var(--black)}
+.mode button:hover{color:var(--gray3)}
+.mode button.on:hover{color:var(--black)}
+header.top p{margin-top:22px;max-width:560px;font-size:14px;line-height:1.85;color:var(--gray3)}
 .sample{display:inline-block;margin-top:18px;font-size:11px;letter-spacing:1px;padding:5px 10px;border:1px dashed var(--hot);color:var(--hot)}
 
 section{max-width:1100px;margin:0 auto;padding:56px 16px;border-bottom:1px solid var(--gray1)}
@@ -41,9 +46,9 @@ section:last-of-type{border-bottom:none}
 h2{font-size:13px;font-weight:700;letter-spacing:3px;margin-bottom:8px}
 .sub{font-size:13px;color:var(--gray2);line-height:1.7;margin-bottom:26px}
 
-/* 매입가표 */
+/* 가격표 */
 .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.tabs{display:flex;gap:0;border:1px solid var(--black)}
+.tabs{display:flex;border:1px solid var(--black)}
 .tabs button{background:none;border:none;border-right:1px solid var(--black);padding:9px 14px;font-size:12px;letter-spacing:1px}
 .tabs button:last-child{border-right:none}
 .tabs button.on{background:var(--black);color:var(--white)}
@@ -59,9 +64,10 @@ table.list{width:100%;border-collapse:collapse;font-size:13px}
 .list th.r{text-align:right}
 .hot{font-size:10px;font-weight:700;color:var(--hot);border:1px solid var(--hot);padding:1px 5px;margin-left:6px;letter-spacing:.5px;vertical-align:2px}
 .rar{font-size:11px;border:1px solid var(--gray1);padding:2px 6px;color:var(--gray3)}
-.add{background:none;border:1px solid var(--black);padding:7px 12px;font-size:12px;white-space:nowrap}
+.add{background:none;border:1px solid var(--black);padding:7px 12px;font-size:12px;white-space:nowrap;min-width:52px}
 .add:hover{background:var(--black);color:var(--white)}
 .add.in{background:var(--black);color:var(--white)}
+.add:disabled{border-color:var(--gray1);color:var(--gray2);background:none;cursor:default}
 .empty{padding:40px 8px;text-align:center;color:var(--gray2);font-size:13px}
 .note{margin-top:14px;font-size:12px;color:var(--gray2);line-height:1.7}
 
@@ -75,7 +81,7 @@ table.list{width:100%;border-collapse:collapse;font-size:13px}
 .cond p{font-size:12px;line-height:1.7;color:var(--gray3)}
 
 /* 절차 */
-ol.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--black)}
+ol.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--black)}
 .steps li{padding:20px 18px 0 0}
 .steps .n{font-size:12px;font-weight:700;letter-spacing:2px}
 .steps b{display:block;font-size:15px;margin:8px 0}
@@ -89,17 +95,16 @@ ol.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:0;
 .addr .k{font-size:11px;letter-spacing:2px;color:var(--gray2);margin-bottom:6px}
 
 dl.faq dt{font-weight:700;font-size:14px;margin-top:22px}
-dl.faq dt:first-child{margin-top:0}
+dl.faq dt:first-of-type{margin-top:0}
 dl.faq dd{font-size:13px;line-height:1.8;color:var(--gray3);margin-top:6px}
 
 footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);padding:40px 16px}
 
-/* 신청 목록 바 + 패널 */
+/* 목록 바 + 패널 */
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--black);color:var(--white);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
 .bar .sum{font-size:13px}
 .bar .sum b{font-size:16px;margin-left:6px}
 .bar button{background:var(--white);color:var(--black);border:none;padding:10px 18px;font-size:12px;font-weight:700;letter-spacing:1px}
-.bar[hidden]{display:none}
 
 .panel{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.4);display:none}
 .panel.open{display:block}
@@ -124,7 +129,7 @@ footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);pa
 .acts button,.acts a{display:block;text-align:center;text-decoration:none;padding:13px;font-size:13px;font-weight:700;letter-spacing:1px;border:1px solid var(--black)}
 .acts .pri{background:var(--black);color:#fff}
 .acts .sec{background:#fff;color:var(--black)}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--black);color:#fff;font-size:12px;padding:10px 16px;opacity:0;transition:opacity .2s;z-index:80;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--black);color:#fff;font-size:12px;padding:10px 16px;opacity:0;transition:opacity .2s;z-index:80;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1}
 
 @media (max-width:760px){
@@ -146,15 +151,15 @@ footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);pa
 </head>
 <body>
 
-<div class="strip">PIKU CARD BUY</div>
+<div class="strip">PIKU CARD</div>
 
 <nav>
   <div class="nav-in">
-    <a class="brand" href="./">PIKU<small>매입</small></a>
+    <a class="brand" href="./">PIKU<small>카드</small></a>
     <ul class="navlinks">
-      <li><a href="#price">매입가표</a></li>
-      <li><a href="#cond">상태 기준</a></li>
-      <li><a href="#how">신청 방법</a></li>
+      <li><a href="#price">가격표</a></li>
+      <li data-m="buy"><a href="#cond">상태 기준</a></li>
+      <li><a href="#how">진행 방법</a></li>
       <li><a href="#faq">질문</a></li>
       <li><a href="../">쇼핑몰</a></li>
     </ul>
@@ -162,14 +167,18 @@ footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);pa
 </nav>
 
 <header class="top">
-  <h1>카드 매입</h1>
-  <p>매입가표에서 팔 카드를 담으면 예상 금액이 바로 계산돼요. 담은 목록을 복사해서 카톡이나 인스타 DM으로 보내주시면, 카드를 받아 상태를 본 뒤 금액을 확정합니다.</p>
+  <div class="mode" id="mode" role="tablist">
+    <button data-mode="sell" role="tab">구매</button>
+    <button data-mode="buy" role="tab">매입</button>
+  </div>
+  <p data-m="sell">가격표에서 사고 싶은 카드를 담아 목록을 복사한 뒤, 카톡이나 인스타 DM으로 보내주세요. 재고를 확인하고 택배비와 입금 계좌를 알려드립니다.</p>
+  <p data-m="buy">파실 카드를 담으면 예상 매입 금액이 바로 계산돼요. 목록을 복사해 카톡이나 DM으로 보내주시면, 카드를 받아 상태를 본 뒤 금액을 확정합니다.</p>
   <span class="sample" id="sampleNote" hidden>지금 보이는 카드와 금액은 화면 확인용 예시예요</span>
 </header>
 
 <section id="price">
-  <h2>매입가표</h2>
-  <p class="sub" id="priceSub">미개봉급 상태 기준 금액이에요. 사용감이 있으면 아래 상태 기준의 비율을 곱해서 계산합니다.</p>
+  <h2 id="priceTitle">판매가표</h2>
+  <p class="sub" id="priceSub"></p>
 
   <div class="tools">
     <div class="tabs" id="tabs"></div>
@@ -183,30 +192,37 @@ footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);pa
   </div>
 
   <table class="list">
-    <thead><tr><th>카드</th><th>확장팩 · 번호</th><th>레어도</th><th class="r">매입가</th><th></th></tr></thead>
+    <thead><tr><th>카드</th><th>확장팩 · 번호</th><th>레어도</th><th class="r" id="priceCol">판매가</th><th></th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
-  <p class="note">목록에 없는 카드도 매입해요. 앞뒷면 사진을 보내주시면 따로 견적을 드립니다.</p>
+  <p class="note" data-m="sell">목록에 없는 카드는 DM으로 물어봐 주세요. 들어오는 대로 구해드릴 수 있는지 알려드려요.</p>
+  <p class="note" data-m="buy">목록에 없는 카드도 매입해요. 앞뒷면 사진을 보내주시면 따로 견적을 드립니다.</p>
 </section>
 
-<section id="cond">
+<section id="cond" data-m="buy">
   <h2>상태 기준</h2>
   <p class="sub">신청할 때 고른 상태와 실제 상태가 다르면, 확인한 상태 기준으로 금액을 다시 알려드려요.</p>
   <div class="conds" id="conds"></div>
 </section>
 
 <section id="how">
-  <h2>신청 방법</h2>
+  <h2>진행 방법</h2>
   <p class="sub">회원가입 없이 진행돼요.</p>
-  <ol class="steps">
-    <li><span class="n">01</span><b>목록 담기</b><p>매입가표에서 카드를 담고 상태와 수량을 고르세요.</p></li>
+  <ol class="steps" data-m="sell">
+    <li><span class="n">01</span><b>카드 담기</b><p>가격표에서 카드를 담고 수량을 고르세요.</p></li>
+    <li><span class="n">02</span><b>목록 보내기</b><p>아래 바에서 목록을 복사해 카톡이나 DM으로 보내주세요.</p></li>
+    <li><span class="n">03</span><b>재고 확인과 입금</b><p>재고를 확인한 뒤 최종 금액과 계좌를 알려드려요. 재고가 없는 카드는 빼고 계산합니다.</p></li>
+    <li><span class="n">04</span><b>발송</b><p>입금이 확인되면 슬리브와 탑로더에 넣어 택배로 보내고 운송장 번호를 알려드려요.</p></li>
+  </ol>
+  <ol class="steps" data-m="buy">
+    <li><span class="n">01</span><b>목록 담기</b><p>가격표에서 카드를 담고 상태와 수량을 고르세요.</p></li>
     <li><span class="n">02</span><b>목록 보내기</b><p>아래 바에서 목록을 복사해 카톡이나 DM으로 보내주세요. 받은 순서대로 답장드려요.</p></li>
     <li><span class="n">03</span><b>카드 발송</b><p>답장을 받은 뒤 택배로 보내고 운송장 번호를 알려주세요.</p></li>
     <li><span class="n">04</span><b>검수와 정산</b><p id="payStep">한 장씩 상태를 확인하고 최종 금액을 알려드린 다음 계좌로 입금합니다.</p></li>
   </ol>
 </section>
 
-<section id="pack">
+<section id="pack" data-m="buy">
   <h2>포장해서 보내는 법</h2>
   <p class="sub">배송 중에 휘거나 모서리가 눌리면 상태 등급이 내려가요. 포장만 제대로 해도 막을 수 있습니다.</p>
   <div class="pack">
@@ -226,32 +242,38 @@ footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);pa
 
 <section id="faq">
   <h2>자주 받는 질문</h2>
-  <dl class="faq">
+  <dl class="faq" data-m="sell">
+    <dt>카드 상태는 어떤가요?</dt>
+    <dd>판매 카드는 미개봉급만 올려요. 보내기 전에 앞뒷면 사진을 먼저 보여드릴 수 있어요.</dd>
+    <dt>가격은 언제 바뀌나요?</dt>
+    <dd>시세에 따라 수시로 바뀌어요. 목록을 보낸 시점의 가격으로 계산합니다.</dd>
+  </dl>
+  <dl class="faq" data-m="buy">
+    <dt>매입가는 어떻게 정하나요?</dt>
+    <dd id="rateDd"></dd>
     <dt>검수 후 금액이 바뀌면 어떻게 되나요?</dt>
     <dd>바뀐 금액과 이유를 사진과 함께 먼저 보내드려요. 동의하지 않으시면 그 카드는 매입하지 않고 돌려보냅니다.</dd>
     <dt>가품이 섞여 있으면요?</dt>
     <dd>가품으로 확인된 카드는 매입하지 않고 돌려보내요.</dd>
-    <dt>매입가는 언제 바뀌나요?</dt>
-    <dd id="updatedDd">시세에 따라 수시로 바뀌어요. 목록을 보낸 시점의 금액을 기준으로 견적을 드립니다.</dd>
     <dt id="minDt" hidden>최소 매입 금액이 있나요?</dt>
     <dd id="minDd" hidden></dd>
   </dl>
 </section>
 
-<footer>PIKU · 카드 매입</footer>
+<footer>PIKU · 카드 구매와 매입</footer>
 
 <div class="bar" id="bar" hidden>
-  <div class="sum"><span id="barCnt">0장</span> · 예상<b id="barSum">₩0</b></div>
+  <div class="sum"><span id="barCnt">0장</span> · <span id="barLbl">합계</span><b id="barSum">₩0</b></div>
   <button id="openPanel">목록 보기</button>
 </div>
 
 <div class="panel" id="panel">
-  <div class="sheet" role="dialog" aria-label="매입 신청 목록">
-    <div class="sheet-h"><h3>매입 신청 목록</h3><button class="x" id="closePanel" aria-label="닫기">×</button></div>
+  <div class="sheet" role="dialog" aria-labelledby="sheetTitle">
+    <div class="sheet-h"><h3 id="sheetTitle">구매 목록</h3><button class="x" id="closePanel" aria-label="닫기">×</button></div>
     <div class="items" id="items"></div>
     <div class="sheet-f">
-      <div class="total"><span>예상 금액</span><b id="total">₩0</b></div>
-      <small>카드를 받아 상태를 확인한 뒤 확정돼요.</small>
+      <div class="total"><span id="totalLbl">합계</span><b id="total">₩0</b></div>
+      <small id="totalNote"></small>
       <div class="acts" id="acts">
         <button class="pri" id="copy">목록 복사</button>
       </div>
@@ -265,20 +287,37 @@ footer{text-align:center;font-size:11px;letter-spacing:1px;color:var(--gray2);pa
 <script>
 const won = n => "₩" + Math.round(n).toLocaleString("ko-KR");
 const LANG = {KR:"한글판", JP:"일본판", EN:"영문판"};
+const RATE = BUY_CONFIG.buyRate || 0.6;
+const buyPrice = c => Math.floor(c.price * RATE / 100) * 100;
 const condOf = k => CONDITIONS.find(c => c.key === k) || CONDITIONS[0];
-const keyOf = c => [c.game, c.set, c.no, c.lang].join("|");
+const keyOf = c => [c.game, c.name, c.set, c.no, c.lang].join("|");
 const byKey = Object.fromEntries(buylist.map(c => [keyOf(c), c]));
+const setLine = c => [c.set, c.no].filter(Boolean).join(" ");
 const $ = id => document.getElementById(id);
 
-let game = "", basket = [];
-try { basket = JSON.parse(localStorage.getItem("piku-buy") || "[]").filter(b => byKey[b.key]); } catch(e) {}
-const save = () => { try { localStorage.setItem("piku-buy", JSON.stringify(basket)); } catch(e) {} };
+const TEXT = {
+  sell: { title:"판매가표", col:"판매가", sheet:"구매 목록", total:"합계", bar:"합계",
+          note:"재고를 확인한 뒤 택배비를 더해 최종 금액을 알려드려요.", head:"[PIKU 구매 문의]", add:"담기" },
+  buy:  { title:"매입가표", col:"매입가", sheet:"매입 신청 목록", total:"예상 매입 금액", bar:"예상",
+          note:"카드를 받아 상태를 확인한 뒤 확정돼요.", head:"[PIKU 매입 신청]", add:"담기" },
+};
+
+let mode = "sell", game = "", baskets = { sell: [], buy: [] };
+try {
+  const s = JSON.parse(localStorage.getItem("piku-card") || "{}");
+  for (const m of ["sell","buy"]) baskets[m] = (s[m] || []).filter(b => byKey[b.key]);
+  if (s.mode === "buy") mode = "buy";
+} catch(e) {}
+if (location.hash === "#buy") mode = "buy";
+if (location.hash === "#sell") mode = "sell";
+const save = () => { try { localStorage.setItem("piku-card", JSON.stringify({ ...baskets, mode })); } catch(e) {} };
+const basket = () => baskets[mode];
 
 /* 설정 반영 */
 if (SAMPLE) $("sampleNote").hidden = false;
-if (BUY_CONFIG.updated) $("priceSub").textContent += ` 마지막 갱신 ${BUY_CONFIG.updated}.`;
 if (BUY_CONFIG.payDays) $("payStep").textContent = `한 장씩 상태를 확인하고 최종 금액을 알려드려요. 입금은 ${BUY_CONFIG.payDays}에 합니다.`;
 if (BUY_CONFIG.shipAddress) $("addr").textContent = BUY_CONFIG.shipAddress;
+$("rateDd").textContent = `판매가표 금액의 ${Math.round(RATE*100)}%가 미개봉급 매입가예요. 사용감이 있으면 상태 기준의 비율을 한 번 더 곱합니다. 목록을 보낸 시점의 금액으로 견적을 드려요.`;
 if (BUY_CONFIG.minTotal > 0) {
   $("minDt").hidden = $("minDd").hidden = false;
   $("minDd").textContent = `예상 금액 합계가 ${won(BUY_CONFIG.minTotal)} 이상일 때 받고 있어요. 택배비를 생각하면 이보다 적을 때는 보내시는 쪽이 손해예요.`;
@@ -286,8 +325,9 @@ if (BUY_CONFIG.minTotal > 0) {
 if (BUY_CONFIG.kakaoUrl) $("acts").insertAdjacentHTML("beforeend", `<a class="sec" href="${BUY_CONFIG.kakaoUrl}" target="_blank" rel="noopener">오픈카톡 열기</a>`);
 if (BUY_CONFIG.instaId) $("acts").insertAdjacentHTML("beforeend", `<a class="sec" href="https://instagram.com/${BUY_CONFIG.instaId}" target="_blank" rel="noopener">인스타 @${BUY_CONFIG.instaId}</a>`);
 
-/* 탭 */
+/* 게임 탭 (게임이 하나뿐이면 숨김) */
 const games = [...new Set(buylist.map(c => c.game))];
+$("tabs").hidden = games.length < 2;
 $("tabs").innerHTML = `<button data-g="" class="on">전체</button>` +
   games.map(g => `<button data-g="${g}">${GAMES[g] || g}</button>`).join("");
 $("tabs").onclick = e => {
@@ -299,54 +339,82 @@ $("tabs").onclick = e => {
 $("q").oninput = renderRows;
 $("lang").onchange = renderRows;
 
-/* 상태 기준 */
 $("conds").innerHTML = CONDITIONS.map(c =>
   `<div class="cond"><div class="k">${c.key}</div><div class="l">${c.label}</div><div class="rt">${Math.round(c.rate*100)}%</div><p>${c.desc}</p></div>`
 ).join("");
+
+/* 모드 전환 */
+$("mode").onclick = e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.mode); };
+function setMode(m){
+  mode = m;
+  history.replaceState(null, "", "#" + m);
+  [...$("mode").children].forEach(b => { b.classList.toggle("on", b.dataset.mode === m); b.setAttribute("aria-selected", b.dataset.mode === m); });
+  document.querySelectorAll("[data-m]").forEach(el => el.hidden = el.dataset.m !== m);
+  const T = TEXT[m];
+  $("priceTitle").textContent = T.title;
+  $("priceCol").textContent = T.col;
+  $("sheetTitle").textContent = T.sheet;
+  $("totalLbl").textContent = T.total;
+  $("barLbl").textContent = T.bar;
+  $("totalNote").textContent = T.note;
+  $("priceSub").textContent = (m === "sell"
+    ? "모두 미개봉급 상태 기준 가격이에요."
+    : `판매가의 ${Math.round(RATE*100)}%이고 미개봉급 기준이에요. 사용감이 있으면 아래 상태 기준의 비율을 곱합니다.`)
+    + (BUY_CONFIG.updated ? ` ${BUY_CONFIG.updated} 기준.` : "");
+  update();
+}
+
+const unitPrice = c => mode === "sell" ? c.price : buyPrice(c);
+const soldOut = c => mode === "sell" && c.stock === 0;
 
 function renderRows(){
   const q = $("q").value.trim().toLowerCase(), lg = $("lang").value;
   const list = buylist.filter(c =>
     (!game || c.game === game) && (!lg || c.lang === lg) &&
     (!q || [c.name, c.set, c.no, c.rarity].join(" ").toLowerCase().includes(q))
-  ).sort((a,b) => (b.hot?1:0) - (a.hot?1:0) || b.price - a.price);
+  ).sort((a,b) => (soldOut(a)?1:0) - (soldOut(b)?1:0) || (mode === "buy" ? (b.hot?1:0) - (a.hot?1:0) : 0) || b.price - a.price);
 
-  if (!buylist.length) { $("rows").innerHTML = `<tr><td colspan="5" class="empty">매입가표를 정리하고 있어요. 팔고 싶은 카드 사진을 먼저 보내주셔도 됩니다.</td></tr>`; return; }
-  if (!list.length) { $("rows").innerHTML = `<tr><td colspan="5" class="empty">찾는 카드가 목록에 없어요. 사진을 보내주시면 견적을 드릴게요.</td></tr>`; return; }
+  if (!buylist.length) { $("rows").innerHTML = `<tr><td colspan="5" class="empty">가격표를 정리하고 있어요. 찾는 카드가 있으면 DM으로 물어봐 주세요.</td></tr>`; return; }
+  if (!list.length) { $("rows").innerHTML = `<tr><td colspan="5" class="empty">찾는 카드가 목록에 없어요. DM으로 물어봐 주세요.</td></tr>`; return; }
 
-  const inB = new Set(basket.map(b => b.key));
+  const inB = new Set(basket().map(b => b.key));
   $("rows").innerHTML = list.map(c => {
-    const k = keyOf(c);
+    const k = keyOf(c), so = soldOut(c), on = inB.has(k);
+    const meta = [GAMES[c.game] || c.game, setLine(c), LANG[c.lang] || c.lang].filter(Boolean).join(" · ");
     return `<tr>
-      <td class="c-name"><span class="nm">${c.name}</span>${c.hot ? '<span class="hot">매입 강화</span>' : ''}</td>
-      <td class="c-set meta">${GAMES[c.game] || c.game} · ${c.set} ${c.no} · ${LANG[c.lang] || c.lang}</td>
-      <td class="c-rar"><span class="rar">${c.rarity}</span></td>
-      <td class="pr">${won(c.price)}</td>
-      <td class="c-add"><button class="add${inB.has(k) ? ' in' : ''}" data-k="${k}">${inB.has(k) ? '담김' : '담기'}</button></td>
+      <td class="c-name"><span class="nm">${c.name}</span>${mode === "buy" && c.hot ? '<span class="hot">매입 강화</span>' : ''}</td>
+      <td class="c-set meta">${meta}</td>
+      <td class="c-rar">${c.rarity ? `<span class="rar">${c.rarity}</span>` : ''}</td>
+      <td class="pr">${won(unitPrice(c))}</td>
+      <td class="c-add"><button class="add${on ? ' in' : ''}" data-k="${k}"${so ? ' disabled' : ''}>${so ? '품절' : on ? '담김' : '담기'}</button></td>
     </tr>`;
   }).join("");
 }
 
 $("rows").onclick = e => {
-  const b = e.target.closest(".add"); if (!b) return;
-  const k = b.dataset.k, i = basket.findIndex(x => x.key === k);
-  if (i >= 0) basket.splice(i, 1); else basket.push({ key:k, cond:"NM", qty:1 });
+  const b = e.target.closest(".add"); if (!b || b.disabled) return;
+  const k = b.dataset.k, B = basket(), i = B.findIndex(x => x.key === k);
+  if (i >= 0) B.splice(i, 1); else B.push({ key:k, cond:"NM", qty:1 });
   update();
 };
 
-const lineAmt = b => byKey[b.key].price * condOf(b.cond).rate * b.qty;
-const totalAmt = () => basket.reduce((s,b) => s + lineAmt(b), 0);
+const lineAmt = b => unitPrice(byKey[b.key]) * (mode === "buy" ? condOf(b.cond).rate : 1) * b.qty;
+const totalAmt = () => basket().reduce((s,b) => s + lineAmt(b), 0);
+const maxQty = c => mode === "sell" && c.stock > 0 ? c.stock : 99;
 
 function renderItems(){
-  if (!basket.length) { $("items").innerHTML = `<p class="empty">담은 카드가 없어요.</p>`; return; }
-  $("items").innerHTML = basket.map((b,i) => {
+  const B = basket();
+  if (!B.length) { $("items").innerHTML = `<p class="empty">담은 카드가 없어요.</p>`; return; }
+  $("items").innerHTML = B.map((b,i) => {
     const c = byKey[b.key];
+    const condSel = mode === "buy"
+      ? `<select data-i="${i}" data-f="cond" aria-label="상태">${CONDITIONS.map(x => `<option value="${x.key}"${x.key===b.cond?' selected':''}>${x.label} ${Math.round(x.rate*100)}%</option>`).join("")}</select>`
+      : "";
     return `<div class="it">
       <div class="t"><b>${c.name}</b><span>${won(lineAmt(b))}</span></div>
-      <div class="m">${c.set} ${c.no} · ${c.rarity} · ${LANG[c.lang] || c.lang}</div>
-      <div class="c">
-        <select data-i="${i}" data-f="cond" aria-label="상태">${CONDITIONS.map(x => `<option value="${x.key}"${x.key===b.cond?' selected':''}>${x.label} ${Math.round(x.rate*100)}%</option>`).join("")}</select>
-        <input data-i="${i}" data-f="qty" type="number" min="1" max="99" value="${b.qty}" aria-label="수량">
+      <div class="m">${[setLine(c), c.rarity, LANG[c.lang] || c.lang].filter(Boolean).join(" · ")}</div>
+      <div class="c">${condSel}
+        <input data-i="${i}" data-f="qty" type="number" min="1" max="${maxQty(c)}" value="${b.qty}" aria-label="수량">
         <button class="rm" data-i="${i}">빼기</button>
       </div>
     </div>`;
@@ -355,43 +423,47 @@ function renderItems(){
 
 $("items").onchange = e => {
   const i = +e.target.dataset.i, f = e.target.dataset.f; if (!f) return;
-  basket[i][f] = f === "qty" ? Math.max(1, Math.min(99, parseInt(e.target.value) || 1)) : e.target.value;
+  const b = basket()[i];
+  b[f] = f === "qty" ? Math.max(1, Math.min(maxQty(byKey[b.key]), parseInt(e.target.value) || 1)) : e.target.value;
   update();
 };
-$("items").onclick = e => { const b = e.target.closest(".rm"); if (b) { basket.splice(+b.dataset.i, 1); update(); } };
+$("items").onclick = e => { const b = e.target.closest(".rm"); if (b) { basket().splice(+b.dataset.i, 1); update(); } };
 
 function update(){
   save(); renderRows(); renderItems();
-  const cnt = basket.reduce((s,b) => s + b.qty, 0);
-  $("bar").hidden = !basket.length;
+  const B = basket(), cnt = B.reduce((s,b) => s + b.qty, 0);
+  $("bar").hidden = !B.length;
   $("barCnt").textContent = cnt + "장";
   $("barSum").textContent = $("total").textContent = won(totalAmt());
 }
 
 function message(){
-  const lines = basket.map((b,i) => {
+  const T = TEXT[mode];
+  const lines = basket().map((b,i) => {
     const c = byKey[b.key];
-    return `${i+1}. ${c.name} (${c.set} ${c.no}, ${c.rarity}, ${LANG[c.lang] || c.lang}) ${condOf(b.cond).label} x${b.qty} = ${won(lineAmt(b))}`;
+    const info = [setLine(c), c.rarity, LANG[c.lang] || c.lang].filter(Boolean).join(", ");
+    const cond = mode === "buy" ? ` ${condOf(b.cond).label}` : "";
+    return `${i+1}. ${c.name} (${info})${cond} x${b.qty} = ${won(lineAmt(b))}`;
   });
-  return `[PIKU 매입 신청]\n${lines.join("\n")}\n\n예상 금액 ${won(totalAmt())}\n(검수 후 확정)`;
+  return `${T.head}\n${lines.join("\n")}\n\n${T.total} ${won(totalAmt())}\n(${mode === "sell" ? "택배비 별도, 재고 확인 후 확정" : "검수 후 확정"})`;
 }
 
 function toast(t){ const el = $("toast"); el.textContent = t; el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 1800); }
 
 $("copy").onclick = async () => {
-  if (!basket.length) return toast("담은 카드가 없어요");
+  if (!basket().length) return toast("담은 카드가 없어요");
   const txt = message();
-  try { await navigator.clipboard.writeText(txt); toast("목록을 복사했어요. 카톡이나 DM에 붙여넣어 주세요"); }
+  try { await navigator.clipboard.writeText(txt); toast("복사했어요. 카톡이나 DM에 붙여넣어 주세요"); }
   catch(e) {
     const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
-    ta.select(); document.execCommand("copy"); ta.remove(); toast("목록을 복사했어요");
+    ta.select(); document.execCommand("copy"); ta.remove(); toast("복사했어요");
   }
 };
 $("openPanel").onclick = () => $("panel").classList.add("open");
 $("closePanel").onclick = () => $("panel").classList.remove("open");
 $("panel").onclick = e => { if (e.target === $("panel")) $("panel").classList.remove("open"); };
 
-update();
+setMode(mode);
 </script>
 </body>
 </html>
