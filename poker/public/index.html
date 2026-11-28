@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#07090d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Piku Poker">
+<title>Piku Poker</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="theme-green">
+<div id="app" class="app">
+  <header class="topbar">
+    <div class="tb-left">
+      <div class="logo"><span class="logo-mark">♠&#xFE0E;</span><span class="logo-text">PIKU<b>POKER</b></span></div>
+      <div class="tb-hand" id="tb-hand"></div>
+    </div>
+    <div class="tb-center">
+      <div class="blinds-pill" id="blinds-pill">
+        <span class="bl-label">블라인드</span>
+        <span class="bl-val" id="tb-blinds">10 / 20</span>
+        <span class="bl-next" id="tb-level"></span>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="icon-btn" id="btn-invite" title="친구 초대 (QR)" aria-label="친구 초대"></button>
+      <button class="icon-btn" id="btn-chat" title="채팅 · 기록" aria-label="채팅"><span class="badge" id="chat-badge"></span></button>
+      <button class="icon-btn hide-sm" id="btn-board" title="순위표" aria-label="순위표"></button>
+      <button class="icon-btn hide-sm" id="btn-sound" title="사운드" aria-label="사운드"></button>
+      <button class="icon-btn" id="btn-menu" title="메뉴" aria-label="메뉴"></button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="table-area" id="table-area">
+      <div class="table" id="table">
+        <div class="table-felt"><div class="felt-logo"><span>♠&#xFE0E;</span> PIKU POKER <span>♥&#xFE0E;</span></div></div>
+      </div>
+      <div class="center" id="center">
+        <div class="pot-zone" id="pot-zone"></div>
+        <div class="board" id="board"></div>
+        <div class="center-msg" id="center-msg"></div>
+      </div>
+      <div class="layer" id="bets"></div>
+      <div class="layer" id="seats"></div>
+      <div class="dealer-btn" id="dealer-btn">D</div>
+    </div>
+  </main>
+
+  <footer class="controls" id="controls">
+    <div class="ctl-top">
+      <div class="my-hand" id="my-hand"></div>
+    </div>
+    <div class="ctl-body" id="ctl-body"></div>
+    <button class="emote-fab" id="btn-emote" aria-label="이모티콘"></button>
+    <div class="emote-pop" id="emote-pop"></div>
+  </footer>
+</div>
+
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <div class="tabs">
+      <button class="tab on" data-tab="chat">채팅</button>
+      <button class="tab" data-tab="log">핸드 기록</button>
+    </div>
+    <button class="icon-btn ghost" id="drawer-close" aria-label="닫기"></button>
+  </div>
+  <div class="drawer-body">
+    <div class="pane on" id="pane-chat"><div class="chat-list" id="chat-list"></div></div>
+    <div class="pane" id="pane-log"><div class="log-list" id="log-list"></div></div>
+  </div>
+  <form class="chat-form" id="chat-form" autocomplete="off">
+    <input id="chat-input" maxlength="200" placeholder="메시지 보내기…" enterkeyhint="send">
+    <button type="submit" class="send-btn" id="chat-send" aria-label="보내기"></button>
+  </form>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<div class="modal-wrap" id="modal" aria-hidden="true">
+  <div class="modal" role="dialog">
+    <div class="modal-head"><h3 id="modal-title"></h3><button class="icon-btn ghost" id="modal-close" aria-label="닫기"></button></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="sheet-wrap" id="menu" aria-hidden="true"><div class="sheet" id="menu-sheet"></div></div>
+
+<div class="lobby" id="lobby">
+  <div class="lobby-bg"></div>
+  <form class="lobby-card" id="lobby-form" autocomplete="off">
+    <div class="lobby-cards" aria-hidden="true">
+      <div class="lc lc1"><b>A</b><i>♠&#xFE0E;</i></div>
+      <div class="lc lc2 red"><b>K</b><i>♥&#xFE0E;</i></div>
+    </div>
+    <h1>PIKU <span>POKER</span></h1>
+    <p class="lobby-sub">같은 와이파이의 친구들과 즐기는 텍사스 홀덤</p>
+    <label class="fld-label" for="lobby-name">닉네임</label>
+    <input id="lobby-name" class="fld" maxlength="12" placeholder="최대 12자" required>
+    <label class="fld-label">아바타</label>
+    <div class="avatar-grid" id="lobby-avatars"></div>
+    <button class="btn btn-gold btn-lg" type="submit">테이블 입장</button>
+    <div class="lobby-foot">
+      <span id="lobby-count"></span>
+      <button type="button" class="link-btn" id="lobby-watch">관전만 할게요</button>
+    </div>
+  </form>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<div class="conn" id="conn"><span class="spin"></span><span id="conn-text">서버에 연결하는 중…</span></div>
+<div class="fx" id="fx"></div>
+
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "Piku Poker",
+  "short_name": "Piku Poker",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07090d",
+  "theme_color": "#07090d",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
