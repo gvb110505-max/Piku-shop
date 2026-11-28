@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/ws", "destination": "/api/server" },
+    { "source": "/qr.svg", "destination": "/api/server" },
+    { "source": "/api/info", "destination": "/api/server" }
+  ],
+  "functions": {
+    "api/server.js": { "maxDuration": 300 }
+  }
+}

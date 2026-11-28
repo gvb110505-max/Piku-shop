@@ -200,6 +200,11 @@ async function requestWakeLock() {
 
 // ───────────────────────── 서버 메시지 ─────────────────────────
 function onWelcome(m) {
+  if (S.instance && m.instance && S.instance !== m.instance) {
+    toast('서버가 새로 시작되어 테이블이 다시 열렸어요', 'gold');
+  }
+  S.instance = m.instance;
+  S.hosted = !!m.hosted;
   S.you = m.you;
   S.urls = m.urls || [];
   S.log = m.log || [];
@@ -1528,26 +1533,42 @@ function confirmReset() {
   });
 }
 
+const isPrivateHost = (h) => /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)|\.local$/.test(h);
+
 async function openInvite() {
-  if (!S.urls.length) {
+  const online = S.hosted || !isPrivateHost(location.hostname);
+  if (!online && !S.urls.length) {
     try {
       const r = await fetch('/api/info');
       S.urls = (await r.json()).urls || [];
     } catch (_) { /* */ }
   }
-  const isLocal = /^(localhost|127\.)/.test(location.hostname);
-  const main = S.urls[0] && isLocal ? S.urls[0] : S.urls.find((u) => u.includes(location.host)) || S.urls[0] || location.origin;
+  let main;
+  if (online) main = location.origin;
+  else if (/^(localhost|127\.)/.test(location.hostname)) main = S.urls[0] || location.origin;
+  else main = S.urls.find((u) => u.includes(location.host)) || location.origin;
+  const canShare = online && typeof navigator.share === 'function';
   openModal('친구 초대', (body) => {
+    const steps = online
+      ? `<div><b>1</b><span>링크를 카톡 등으로 보내거나 QR을 찍게 하세요</span></div>
+         <div><b>2</b><span>와이파이가 달라도, LTE/5G 여도 어디서든 접속돼요</span></div>
+         <div><b>3</b><span>닉네임을 정하고 빈 자리에 앉으면 끝!</span></div>`
+      : `<div><b>1</b><span>친구가 <b>같은 와이파이</b>에 연결되어 있는지 확인하세요</span></div>
+         <div><b>2</b><span>휴대폰 카메라로 QR을 스캔하거나 주소를 입력하세요</span></div>
+         <div><b>3</b><span>닉네임을 정하고 빈 자리에 앉으면 끝!</span></div>`;
     body.innerHTML = `<div class="invite">
       <div class="qr-box"><img alt="QR 코드" src="/qr.svg?u=${encodeURIComponent(main)}"></div>
       <div class="url-box"><code id="inv-url">${esc(main)}</code><button class="btn btn-sm btn-gold" id="inv-copy">${icon('copy', 15)} 복사</button></div>
-      ${S.urls.length > 1 ? `<div class="alt-urls">다른 주소: ${S.urls.filter((u) => u !== main).map(esc).join(' · ')}</div>` : ''}
-      <div class="steps">
-        <div><b>1</b><span>친구가 <b>같은 와이파이</b>에 연결되어 있는지 확인하세요</span></div>
-        <div><b>2</b><span>휴대폰 카메라로 QR을 스캔하거나 주소를 입력하세요</span></div>
-        <div><b>3</b><span>닉네임을 정하고 빈 자리에 앉으면 끝!</span></div>
-      </div></div>`;
+      ${canShare ? `<button class="btn btn-lg" id="inv-share" style="margin-top:10px">${icon('send', 17)} 친구에게 공유하기</button>` : ''}
+      ${!online && S.urls.length > 1 ? `<div class="alt-urls">다른 주소: ${S.urls.filter((u) => u !== main).map(esc).join(' · ')}</div>` : ''}
+      <div class="steps">${steps}</div></div>`;
     body.querySelector('#inv-copy').onclick = () => copyText(main);
+    const sh = body.querySelector('#inv-share');
+    if (sh) {
+      sh.onclick = () => {
+        navigator.share({ title: 'Piku Poker', text: '포커 한 판 하자! 🃏', url: main }).catch(() => {});
+      };
+    }
   });
 }
 

@@ -158,7 +158,7 @@ function attachWebSocket(server, path, onConnection) {
     const url = (req.url || '').split('?')[0];
     const key = req.headers['sec-websocket-key'];
     const upgrade = String(req.headers.upgrade || '').toLowerCase();
-    if (url !== path || !key || upgrade !== 'websocket') {
+    if ((path && url !== path) || !key || upgrade !== 'websocket') {
       socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n');
       socket.destroy();
       return;
